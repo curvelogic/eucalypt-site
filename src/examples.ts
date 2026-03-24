@@ -18,8 +18,8 @@ export const EXAMPLES: Example[] = [
     source: `{
   numbers: [1, 2, 3, 4, 5]
   doubled: numbers map(* 2)
-  evens: numbers filter(even?)
   total: numbers foldl(+, 0)
+  first-three: numbers take(3)
 }`,
   },
   {
@@ -27,8 +27,8 @@ export const EXAMPLES: Example[] = [
     format: "json",
     source: `{
   greeting: "Hello, Eucalypt!"
-  upper: greeting str.upper
-  lower: greeting str.lower
+  upper: greeting str.to-upper
+  lower: greeting str.to-lower
   words: greeting str.split-on(" ")
 }`,
   },
@@ -57,27 +57,27 @@ export const EXAMPLES: Example[] = [
     source: `{
   x: 42
   label: if(x > 100, "large", if(x > 10, "medium", "small"))
-  fizzbuzz: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-    map(if((% 15) = 0, "FizzBuzz", if((% 3) = 0, "Fizz", if((% 5) = 0, "Buzz", str))))
+  classify(n): if(n > 0, "positive", if(n = 0, "zero", "negative"))
+  signs: [-3, 0, 5, -1, 2] map(classify)
 }`,
   },
   {
     name: "Data Transformation",
     format: "json",
     source: `{
-  people: [
-    { name: "Alice" age: 30 }
-    { name: "Bob"   age: 25 }
-    { name: "Carol" age: 35 }
-  ]
-  names: people map(.name)
-  adults: people filter(.age >= 18)
-  oldest: people foldl((a b): if(a.age > b.age, a, b), head(people))
+  items: ["apple", "banana", "cherry", "date"]
+  n: items count
+  reversed: items reverse
+  first: items head
+  rest: items tail
 }`,
   },
   {
-    name: "Text Output",
+    name: "String Interpolation",
     format: "text",
-    source: `"The answer is {42}"`,
+    source: `{
+  name: "world"
+  result: "Hello, {name}!"
+}.result`,
   },
 ];

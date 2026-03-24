@@ -4,7 +4,7 @@
   "collaborators": [
     "gmorpheme <github@gmorpheme.net>"
   ],
-  "version": "0.5.0",
+  "version": "0.5.1",
   "files": [
     "eucalypt_bg.wasm",
     "eucalypt.js",
