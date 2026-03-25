@@ -5,7 +5,7 @@
  */
 
 import "../styles/playground.css";
-import { initEvaluator, run, getFormats } from "./evaluator";
+import { initEvaluator, run, runExpr, getFormats } from "./evaluator";
 import { createEditor } from "./editor";
 import { EXAMPLES } from "./examples";
 import { readStateFromUrl, writeStateToUrl, copyShareLink } from "./share";
@@ -24,6 +24,7 @@ const runBtn = document.getElementById("run-btn")! as HTMLButtonElement;
 const shareBtn = document.getElementById("share-btn")! as HTMLButtonElement;
 const formatSelect = document.getElementById("format-select") as HTMLSelectElement;
 const exampleSelect = document.getElementById("example-select") as HTMLSelectElement;
+const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,10 @@ function setSource(source: string): void {
   });
 }
 
+function getMode(): "unit" | "expr" {
+  return modeSelect?.value === "expr" ? "expr" : "unit";
+}
+
 // ── Evaluation ────────────────────────────────────────────────────────────────
 
 function runCode(): void {
@@ -53,13 +58,14 @@ function runCode(): void {
 
   const source = getSource();
   const format = formatSelect.value;
+  const mode = getMode();
 
   // Persist state in URL
-  writeStateToUrl({ source, format });
+  writeStateToUrl({ source, format, mode });
 
   // Run synchronously (WASM is sync)
   try {
-    const result = run(source, format);
+    const result = mode === "expr" ? runExpr(source, format) : run(source, format);
     if (result.success && result.output !== undefined) {
       outputEl.textContent = result.output;
       outputEl.className = "success";
@@ -109,6 +115,7 @@ function populateExamples(): void {
     if (example) {
       setSource(example.source);
       formatSelect.value = example.format;
+      modeSelect.value = example.mode ?? "unit";
     }
     exampleSelect.value = "";
   });
@@ -132,7 +139,7 @@ function populateFormats(): void {
 // ── Share ─────────────────────────────────────────────────────────────────────
 
 shareBtn.addEventListener("click", async () => {
-  await copyShareLink({ source: getSource(), format: formatSelect.value });
+  await copyShareLink({ source: getSource(), format: formatSelect.value, mode: getMode() });
   shareBtn.textContent = "Copied!";
   setTimeout(() => {
     shareBtn.textContent = "Share";
@@ -147,6 +154,7 @@ async function init(): Promise<void> {
   const initialExample = EXAMPLES[0];
   const initialSource = urlState?.source ?? initialExample.source;
   const initialFormat = urlState?.format ?? initialExample.format;
+  const initialMode = urlState?.mode ?? initialExample.mode ?? "unit";
 
   // Create editor
   editor = createEditor(editorContainer, initialSource, runCode);
@@ -161,6 +169,7 @@ async function init(): Promise<void> {
   populateFormats();
   populateExamples();
   formatSelect.value = initialFormat;
+  modeSelect.value = initialMode;
 
   // Hide loading overlay
   loadingOverlay.style.display = "none";

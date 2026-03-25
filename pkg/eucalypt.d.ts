@@ -2,16 +2,26 @@
 /* eslint-disable */
 
 /**
- * Evaluate eucalypt source code and return the result as a JSON string.
+ * Evaluate a eucalypt unit (declarations) and return the result as JSON.
+ *
+ * Input is parsed as a unit — the same as a `.eu` file.  This is the
+ * default mode for the playground.
  *
  * # Arguments
- * * `source` — eucalypt source code
+ * * `source` — eucalypt source code (declarations, like a `.eu` file)
  * * `format` — output format: `"yaml"`, `"json"`, `"toml"`, `"text"`, `"edn"`, `"html"`
  *
  * # Returns
  * A JSON string containing an `EvalResult`.
  */
 export function evaluate(source: string, format: string): string;
+
+/**
+ * Evaluate a eucalypt expression and return the result as JSON.
+ *
+ * Input is parsed as a bare expression — the same as CLI `-e`.
+ */
+export function evaluate_expr(source: string, format: string): string;
 
 /**
  * Return the list of supported output formats as a JSON array string.
@@ -23,6 +33,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly evaluate: (a: number, b: number, c: number, d: number) => [number, number];
+    readonly evaluate_expr: (a: number, b: number, c: number, d: number) => [number, number];
     readonly formats: () => [number, number];
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __externref_table_alloc: () => number;

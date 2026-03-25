@@ -3,6 +3,7 @@
 export interface PlaygroundState {
   source: string;
   format: string;
+  mode?: "unit" | "expr";
 }
 
 export function encodeState(state: PlaygroundState): string {
