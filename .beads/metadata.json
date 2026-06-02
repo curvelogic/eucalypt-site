@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "eucalypt_playground",
+  "project_id": "206f8995-5da8-439c-a6e5-c050b7053fc7"
+}
