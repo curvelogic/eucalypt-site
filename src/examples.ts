@@ -71,4 +71,41 @@ rest: items tail`,
   result: "Hello, {name}!"
 }.result`,
   },
+  {
+    name: "List Comprehensions",
+    format: "yaml",
+    source: `pairs: { :for x: [1, 2, 3] y: [10, 20] }.(x + y)
+triples: { :for a: [3, 5] b: [4, 12] }.(a * a + b * b)`,
+  },
+  {
+    name: "Type Annotations",
+    format: "yaml",
+    source: `\` { type: "number → number" }
+double(x): x * 2
+
+\` { type: "[number] → number" }
+sum(xs): xs foldl(+, 0)
+
+result: [1, 2, 3] map(double) sum`,
+  },
+  {
+    name: "Safe Navigation",
+    format: "yaml",
+    source: `data: {server: {host: "localhost" port: 8080}}
+
+host: data ~ :server ~ :host
+port: data ~ :server ~ :port
+missing: data ~ :server ~ :timeout
+deep-miss: data ~ :cache ~ :ttl`,
+  },
+  {
+    name: "Multi-way Conditional",
+    format: "yaml",
+    source: `grade(score): cond[score >= 90 => "A"
+                    , score >= 80 => "B"
+                    , score >= 70 => "C"
+                    , "F"]
+
+grades: [95, 82, 65, 91, 73] map(grade)`,
+  },
 ];
