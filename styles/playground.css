@@ -274,3 +274,45 @@ button:disabled {
     height: 50%;
   }
 }
+
+/* ── Engine version ─────────────────────────────────────────────────────── */
+
+#engine-version {
+  margin-left: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: monospace;
+}
+#engine-version:hover { text-decoration: underline; }
+
+/* ── Repository file view ───────────────────────────────────────────────── */
+
+body:not(.viewing) .viewer-only { display: none !important; }
+body.viewing .playground-only { display: none !important; }
+
+
+#view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+#view-title { font-family: monospace; color: var(--text); font-weight: 600; overflow-wrap: anywhere; }
+#view-note { color: var(--text-muted); }
+#view-bar a { color: var(--accent); }
+#view-error {
+  padding: 12px 16px;
+  background: #3b1d1d;
+  color: #f87171;
+  font-size: 14px;
+}
+#view-error.hidden { display: none; }
+
+.cm-picked-line { background-color: rgba(187, 128, 9, 0.18); }
+.cm-gutterElement { cursor: default; }
+body.viewing .cm-lineNumbers .cm-gutterElement { cursor: pointer; }

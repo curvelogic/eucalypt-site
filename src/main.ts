@@ -1,14 +1,19 @@
 /**
  * Eucalypt Playground — entry point.
  *
- * Wires together the editor, evaluator, examples, and sharing.
+ * Wires together the editor, evaluator, examples, and sharing; or, for a
+ * `#gh=` link, a read-only view of a repository file.
  */
 
 import "../styles/playground.css";
+import "../vendor/highlight.css";
+import engine from "../vendor/eucalypt.json";
 import { initEvaluator, run, runExpr, getFormats } from "./evaluator";
-import { createEditor } from "./editor";
+import { createEditor, createViewer } from "./editor";
 import { EXAMPLES } from "./examples";
-import { readStateFromUrl, writeStateToUrl, copyShareLink } from "./share";
+import { decodeState, writeStateToUrl, copyShareLink } from "./share";
+import { fetchGitHubFile, gitHubHash, parseGitHubLink, sourceUrl, type GitHubFile } from "./github";
+import { loadHighlighter } from "./highlight/browser";
 import { EditorView } from "@codemirror/view";
 
 // ── DOM references ────────────────────────────────────────────────────────────
@@ -61,7 +66,7 @@ function runCode(): void {
   const mode = getMode();
 
   // Persist state in URL
-  writeStateToUrl({ source, format, mode });
+  void writeStateToUrl({ source, format, mode });
 
   // Run synchronously (WASM is sync)
   try {
@@ -139,45 +144,102 @@ function populateFormats(): void {
 // ── Share ─────────────────────────────────────────────────────────────────────
 
 shareBtn.addEventListener("click", async () => {
-  await copyShareLink({ source: getSource(), format: formatSelect.value, mode: getMode() });
-  shareBtn.textContent = "Copied!";
+  try {
+    await copyShareLink({ source: getSource(), format: formatSelect.value, mode: getMode() });
+    shareBtn.textContent = "Copied!";
+  } catch {
+    shareBtn.textContent = "Link in address bar";
+  }
   setTimeout(() => {
     shareBtn.textContent = "Share";
   }, 2000);
 });
 
+// ── Engine version ────────────────────────────────────────────────────────────
+
+function showEngineVersion(): void {
+  const el = document.getElementById("engine-version") as HTMLAnchorElement;
+  el.textContent = `eucalypt ${engine.version} (${engine.commit.slice(0, 7)})`;
+  el.href = `https://github.com/${engine.repository}/tree/${engine.commit}`;
+  el.title = `Engine and grammar ${engine.grammar_version} built from ${engine.repository} at ${engine.commit}`;
+}
+
+// ── Repository file view ──────────────────────────────────────────────────────
+
+async function initViewer(file: GitHubFile): Promise<void> {
+  document.body.classList.add("viewing");
+  const title = document.getElementById("view-title")!;
+  const source = document.getElementById("view-source") as HTMLAnchorElement;
+  const errorEl = document.getElementById("view-error")!;
+  title.textContent = `${file.owner}/${file.repo} · ${file.ref} · ${file.path}`;
+  source.href = sourceUrl(file);
+  document.title = `${file.path} · Eucalypt Playground`;
+  try {
+    const [highlighter, text] = await Promise.all([loadHighlighter(), fetchGitHubFile(file)]);
+    createViewer(editorContainer, text, highlighter, file.lines, (lines) => {
+      const picked = { ...file, lines };
+      history.replaceState(null, "", "#" + gitHubHash(picked));
+      source.href = sourceUrl(picked);
+    });
+  } catch (e) {
+    errorEl.textContent = e instanceof Error ? e.message : String(e);
+    errorEl.classList.remove("hidden");
+  }
+  loadingOverlay.style.display = "none";
+}
+
 // ── Initialisation ────────────────────────────────────────────────────────────
 
-async function init(): Promise<void> {
-  // Determine initial content (URL hash takes precedence over default example)
-  const urlState = readStateFromUrl();
+async function initPlayground(hash: string): Promise<void> {
+  // URL hash takes precedence over the default example
+  const urlState = hash ? await decodeState(hash) : null;
   const initialExample = EXAMPLES[0];
   const initialSource = urlState?.source ?? initialExample.source;
   const initialFormat = urlState?.format ?? initialExample.format;
   const initialMode = urlState?.mode ?? initialExample.mode ?? "unit";
 
-  // Create editor
-  editor = createEditor(editorContainer, initialSource, runCode);
-
-  // Wire up run button
+  // Without highlighting the playground still edits and runs code.
+  const [highlighter] = await Promise.all([
+    loadHighlighter().catch((e) => {
+      console.error("Highlighting unavailable:", e);
+      return null;
+    }),
+    initEvaluator(),
+  ]);
+  editor = createEditor(editorContainer, initialSource, highlighter, runCode);
   runBtn.addEventListener("click", runCode);
 
-  // Load WASM
-  await initEvaluator();
-
-  // Populate UI
   populateFormats();
   populateExamples();
   formatSelect.value = initialFormat;
   modeSelect.value = initialMode;
 
-  // Hide loading overlay
   loadingOverlay.style.display = "none";
 
   // Auto-run on load if there's URL content
   if (urlState) {
     runCode();
   }
+}
+
+async function init(): Promise<void> {
+  showEngineVersion();
+  const hash = window.location.hash.slice(1);
+  // A link pasted into the address bar replaces the page's content.
+  window.addEventListener("hashchange", () => window.location.reload());
+  if (hash.startsWith("gh=")) {
+    const file = parseGitHubLink(hash.slice(3));
+    if (file) return initViewer(file);
+    document.body.classList.add("viewing");
+    const errorEl = document.getElementById("view-error")!;
+    errorEl.textContent =
+      "This link is not a valid repository file link. The form is #gh=<owner>/<repo>/<ref>/<path>.eu, " +
+      "optionally followed by &L<n> or &L<n>-L<m>.";
+    errorEl.classList.remove("hidden");
+    loadingOverlay.style.display = "none";
+    return;
+  }
+  return initPlayground(hash);
 }
 
 init().catch((err) => {
