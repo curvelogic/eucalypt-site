@@ -17,8 +17,10 @@ runs:
     - name: wasm-pack
       shell: bash
       run: |
-        curl -sSfL https://github.com/rustwasm/wasm-pack/releases/download/v0.13.1/wasm-pack-v0.13.1-x86_64-unknown-linux-musl.tar.gz \
-          | tar xz -C "$RUNNER_TEMP"
+        tarball="$RUNNER_TEMP/wasm-pack.tar.gz"
+        curl -sSfL -o "$tarball" https://github.com/rustwasm/wasm-pack/releases/download/v0.13.1/wasm-pack-v0.13.1-x86_64-unknown-linux-musl.tar.gz
+        echo "c539d91ccab2591a7e975bcf82c82e1911b03335c80aa83d67ad25ed2ad06539  $tarball" | sha256sum -c -
+        tar xzf "$tarball" -C "$RUNNER_TEMP"
         echo "$RUNNER_TEMP/wasm-pack-v0.13.1-x86_64-unknown-linux-musl" >> "$GITHUB_PATH"
     - name: Cache eucalypt build
       uses: actions/cache@v4

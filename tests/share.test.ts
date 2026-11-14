@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeState, encodeState } from "../src/share";
+import { MAX_STATE_BYTES, decodeState, encodeState } from "../src/share";
 
 describe("share links", () => {
   const state = { source: "greeting: \"héllo ✓\"\n".repeat(50), format: "yaml", mode: "unit" as const };
@@ -18,6 +18,12 @@ describe("share links", () => {
   it("still reads links from before compression", async () => {
     const legacy = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
     await expect(decodeState(legacy)).resolves.toEqual(state);
+  });
+
+  it("refuses a link that inflates past the limit", async () => {
+    const huge = await encodeState({ source: "x".repeat(MAX_STATE_BYTES + 1), format: "yaml" });
+    expect(huge.length).toBeLessThan(20000);
+    await expect(decodeState(huge)).resolves.toBeNull();
   });
 
   it.each(["z=!!!", "z=AAAA", "bm90IGpzb24", btoa('{"source":1,"format":"yaml"}'), btoa('{"source":"","format":"yaml","mode":"x"}')])(

@@ -198,7 +198,14 @@ async function initPlayground(hash: string): Promise<void> {
   const initialFormat = urlState?.format ?? initialExample.format;
   const initialMode = urlState?.mode ?? initialExample.mode ?? "unit";
 
-  const [highlighter] = await Promise.all([loadHighlighter(), initEvaluator()]);
+  // Without highlighting the playground still edits and runs code.
+  const [highlighter] = await Promise.all([
+    loadHighlighter().catch((e) => {
+      console.error("Highlighting unavailable:", e);
+      return null;
+    }),
+    initEvaluator(),
+  ]);
   editor = createEditor(editorContainer, initialSource, highlighter, runCode);
   runBtn.addEventListener("click", runCode);
 

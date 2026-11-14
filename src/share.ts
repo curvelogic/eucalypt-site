@@ -14,6 +14,9 @@ export interface PlaygroundState {
 
 const PREFIX = "z=";
 
+/** A shared state larger than this, decompressed, is refused. */
+export const MAX_STATE_BYTES = 4 * 1024 * 1024;
+
 function toBase64Url(bytes: Uint8Array): string {
   let s = "";
   for (let i = 0; i < bytes.length; i += 0x8000) {
@@ -28,9 +31,28 @@ function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
 }
 
+/** Pipe `bytes` through `stream`, refusing output over MAX_STATE_BYTES. */
 async function pipe(bytes: Uint8Array<ArrayBuffer>, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> {
-  const out = new Blob([bytes]).stream().pipeThrough(stream);
-  return new Uint8Array(await new Response(out).arrayBuffer());
+  const reader = new Blob([bytes]).stream().pipeThrough(stream).getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.length;
+    if (total > MAX_STATE_BYTES) {
+      await reader.cancel();
+      throw new Error("shared state is too large");
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const c of chunks) {
+    out.set(c, at);
+    at += c.length;
+  }
+  return out;
 }
 
 function validState(obj: unknown): PlaygroundState | null {

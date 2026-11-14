@@ -33,7 +33,7 @@ const baseTheme: Extension = [
 export function createEditor(
   container: HTMLElement,
   initialDoc: string,
-  highlighter: EuHighlighter,
+  highlighter: EuHighlighter | null,
   onRun: () => void,
 ): EditorView {
   const runKeymap = keymap.of([
@@ -54,7 +54,7 @@ export function createEditor(
       lineNumbers(),
       highlightActiveLine(),
       indentOnInput(),
-      treeSitterHighlighting(highlighter),
+      highlighter ? treeSitterHighlighting(highlighter) : [],
       baseTheme,
       keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
       runKeymap,
