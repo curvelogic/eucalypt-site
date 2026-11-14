@@ -25,7 +25,7 @@ let evaluateExprFn: ((source: string, format: string) => string) | null = null;
 let formatsFn: (() => string) | null = null;
 
 export async function initEvaluator(): Promise<void> {
-  const mod = await import("../pkg/eucalypt.js");
+  const mod = await import("../vendor/engine/eucalypt.js");
   await mod.default();
   evaluateFn = mod.evaluate;
   evaluateExprFn = mod.evaluate_expr;

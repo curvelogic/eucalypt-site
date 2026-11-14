@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,8 +11,9 @@
       <header id="toolbar">
         <div id="toolbar-left">
           <span id="logo">🌿 Eucalypt Playground</span>
+          <a id="engine-version" target="_blank" rel="noopener"></a>
         </div>
-        <div id="toolbar-right">
+        <div id="toolbar-right" class="playground-only">
           <select id="example-select" title="Load an example">
             <option value="">Examples…</option>
           </select>
@@ -31,12 +32,20 @@
         </div>
       </header>
 
+      <div id="view-bar" class="viewer-only">
+        <span id="view-title"></span>
+        <span id="view-note">Read-only view of a repository file: it is shown, not run.</span>
+        <a id="view-source" target="_blank" rel="noopener">View source on GitHub</a>
+        <a id="view-playground" href="./">Open the playground</a>
+      </div>
+      <div id="view-error" class="viewer-only hidden" role="alert"></div>
+
       <main id="panes">
         <div id="editor-pane">
           <div id="editor-container"></div>
         </div>
-        <div id="divider"></div>
-        <div id="output-pane">
+        <div id="divider" class="playground-only"></div>
+        <div id="output-pane" class="playground-only">
           <div id="output-header">
             <span id="output-label">Output</span>
             <span id="status-indicator"></span>

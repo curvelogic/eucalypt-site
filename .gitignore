@@ -3,7 +3,12 @@ dist/
 .DS_Store
 *.local
 
+# Built from eucalypt by scripts/vendor-eucalypt.sh
+vendor/
+.eucalypt/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
 .beads-credential-key
+e2e-screenshots/

@@ -1,0 +1,34 @@
+name: Vendor eucalypt
+description: >
+  Build the engine and take the grammar and highlighting stylesheet from the
+  eucalypt revision pinned in eucalypt-pin.json (scripts/vendor-eucalypt.sh).
+inputs:
+  fixtures:
+    description: Also render the examples/aoc25 fixtures the tests compare against
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Rust toolchain
+      shell: bash
+      run: |
+        rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+        rustup default stable
+    - name: wasm-pack
+      shell: bash
+      run: |
+        curl -sSfL https://github.com/rustwasm/wasm-pack/releases/download/v0.13.1/wasm-pack-v0.13.1-x86_64-unknown-linux-musl.tar.gz \
+          | tar xz -C "$RUNNER_TEMP"
+        echo "$RUNNER_TEMP/wasm-pack-v0.13.1-x86_64-unknown-linux-musl" >> "$GITHUB_PATH"
+    - name: Cache eucalypt build
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          .eucalypt/target
+        key: eucalypt-${{ runner.os }}-${{ hashFiles('eucalypt-pin.json') }}
+        restore-keys: eucalypt-${{ runner.os }}-
+    - name: Vendor
+      shell: bash
+      run: scripts/vendor-eucalypt.sh ${{ inputs.fixtures == 'true' && '--fixtures' || '' }}
