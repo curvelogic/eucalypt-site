@@ -16,7 +16,9 @@
 //     unpublished to the file on GitHub at the pinned commit, except
 //     internal material (INTERNAL below), which is never linked: such a
 //     link becomes its text, and a page that still mentions internal
-//     material is reported as a warning;
+//     material fails the import (ERRORS below);
+//   - fails the import on a page that carries an internal issue ID
+//     (eucalypt's tracker IDs, such as eu-r9oy or eu-2sa6.13);
 //   - turns mdBook fence flags into meta ("```eu,notest" becomes
 //     "```eu notest"), so code blocks keep their flags for runnable blocks.
 //
@@ -161,12 +163,27 @@ function convert(markdown, from) {
   return { title, body: out.join("\n").replace(/^\n+/, "") };
 }
 
+/** Errors that fail the import: internal material that must not be published. */
+const errors = [];
+
+/**
+ * eucalypt's internal issue IDs: "eu-" and a short random base-36 suffix,
+ * optionally with ".N" child numbers (eu-r9oy, eu-oufc, eu-2sa6.13). A word
+ * that merely looks like one ("eu-lib") is listed in NOT_ISSUE_IDS; anything
+ * followed by "-" (eu-west-1) is not an ID.
+ */
+const ISSUE_ID = /\beu-[a-z0-9]{3,6}(?:\.[0-9]+)*\b(?![-\w]|\.[0-9])/g;
+const NOT_ISSUE_IDS = new Set(["eu-lib", "eu-syntax"]);
+const issueIds = (text) => (text.match(ISSUE_ID) ?? []).filter((id) => !NOT_ISSUE_IDS.has(id));
+
 const contentDir = join(root, "src/content/docs/docs");
 rmSync(contentDir, { recursive: true, force: true });
 for (const { page, path, isRoot } of pages) {
   const { title, body } = convert(readFileSync(join(docs, page), "utf8"), page);
   const mentions = body.match(/docs\/superpowers\/|\]\((?:\.\.\/)*superpowers\//g);
-  if (mentions) warnings.push(`${page}: mentions internal material (docs/superpowers/) ${mentions.length} time(s)`);
+  if (mentions) errors.push(`${page}: mentions internal material (docs/superpowers/) ${mentions.length} time(s)`);
+  const ids = issueIds(body);
+  if (ids.length) errors.push(`${page}: carries internal issue IDs: ${[...new Set(ids)].join(", ")}`);
   const front = [
     "---",
     `title: ${JSON.stringify(title)}`,
@@ -197,4 +214,8 @@ writeFileSync(join(generated, "eucalypt.tmLanguage.json"), JSON.stringify({ ...g
 writeFileSync(join(generated, "docs-source.json"), JSON.stringify({ repository: pin.repository, commit: pin.commit }, null, 2) + "\n");
 
 for (const w of warnings) console.warn(`warning: ${w}`);
+if (errors.length) {
+  for (const e of errors) console.error(`error: ${e}`);
+  process.exit(1);
+}
 console.log(`imported ${pages.length} pages from ${pin.repository}@${pin.commit.slice(0, 7)}`);
