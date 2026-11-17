@@ -249,6 +249,8 @@ try {
     assert(pageErrors.length === 0, pageErrors.join("\n"));
   });
 } finally {
+  // Requests still in flight (fonts, the engine) must not outlive the browser.
+  await page.unrouteAll({ behavior: "ignoreErrors" });
   await browser.close();
   server.close();
 }
