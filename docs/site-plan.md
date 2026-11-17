@@ -200,5 +200,9 @@ deployment until it is retired (lane 5).
    page that sends `#z=`, `#gh=` and older links on to `/play/`.
 6. **Pin bumps**: a scheduled job that opens a PR moving `eucalypt-pin.json`
    to eucalypt's latest release.
-7. **Mobile header**: the design's menu under 760px on the homepage and
-   `/play` (the docs already have Starlight's).
+7. **Mobile header** (done): below 50rem, Starlight's own breakpoint, the
+   header's links on the homepage and `/play` give way to a menu button,
+   a disclosure (`aria-expanded`) over `SiteMenu.astro`: the four links,
+   GitHub, the install line and the theme. The docs keep Starlight's menu
+   button, drawn the same, and its foot (`MobileMenuFooter`) shows the
+   same `SiteMenu`.

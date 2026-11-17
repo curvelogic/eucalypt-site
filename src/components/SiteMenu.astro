@@ -1,0 +1,96 @@
+---
+/**
+ * The site's links as a phone menu: the header's four links with a short
+ * note each, GitHub and the install line. The homepage and /play show it
+ * from the header's menu button (SiteHeader.astro); the docs show it at the
+ * foot of Starlight's own mobile menu (starlight/MobileMenuFooter.astro), so
+ * the same links are a tap away on all three.
+ */
+import { GITHUB, INSTALL_LINE, SITE_LINKS, type SiteLinkId } from "./site-links";
+
+interface Props {
+  active?: SiteLinkId | "";
+}
+const { active = "" } = Astro.props;
+---
+
+<div class="gg-menu-list">
+  <nav aria-label="Site">
+    <ul>
+      {
+        SITE_LINKS.map((l) => (
+          <li>
+            <a href={l.href} aria-current={l.id === active ? "page" : undefined}>
+              {l.label} <small>{l.note}</small>
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a href={GITHUB}>GitHub <small>↗</small></a>
+      </li>
+    </ul>
+  </nav>
+  <div class="gg-menu-install"><span aria-hidden="true">$</span> <code>{INSTALL_LINE}</code></div>
+  <slot />
+</div>
+
+<style>
+  .gg-menu-list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .gg-menu-list li {
+    margin: 0;
+  }
+  .gg-menu-list a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.7rem 0.25rem;
+    border-bottom: 1px solid var(--gg-line);
+    color: var(--gg-ink);
+    font: 600 1rem var(--gg-body);
+    text-decoration: none;
+  }
+  .gg-menu-list a small {
+    color: var(--gg-muted);
+    font-weight: 400;
+    font-size: 0.85rem;
+  }
+  .gg-menu-list a[aria-current="page"] {
+    color: var(--gg-link);
+    box-shadow: inset 2px 0 0 var(--gg-leaf);
+    padding-inline-start: 0.6rem;
+  }
+  .gg-menu-install {
+    margin-top: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    font: 12.5px var(--gg-mono);
+    background: var(--gg-surface);
+    border: 1px solid var(--gg-line);
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    color: var(--gg-muted);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  /* The theme select at the menu's foot, on every surface. */
+  .gg-menu-list :global(.gg-menu-theme) {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.85rem;
+    font: 600 0.9rem var(--gg-body);
+    color: var(--gg-muted);
+  }
+  .gg-menu-install code {
+    font: inherit;
+    color: var(--gg-ink);
+    background: none;
+    padding: 0;
+  }
+</style>

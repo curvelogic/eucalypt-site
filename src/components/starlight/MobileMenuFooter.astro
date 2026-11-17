@@ -1,0 +1,29 @@
+---
+/**
+ * The foot of Starlight's mobile menu on the docs: the site's links, GitHub
+ * and the install line (SiteMenu.astro, as in the homepage and /play
+ * menus), then the theme select, so a phone reader of the docs can reach
+ * the playground too.
+ */
+import SiteMenu from "../SiteMenu.astro";
+import ThemeSelect from "../ThemeSelect.astro";
+
+const path = Astro.url.pathname;
+const active = path.startsWith("/docs/reference/prelude/") ? "prelude" : "docs";
+---
+
+<div class="gg-docs-menu">
+  <SiteMenu active={active}>
+    <div class="gg-menu-theme">
+      <span>Theme</span>
+      <ThemeSelect />
+    </div>
+  </SiteMenu>
+</div>
+
+<style>
+  .gg-docs-menu {
+    border-top: 1px solid var(--gg-line);
+    padding-block: 0.5rem 1rem;
+  }
+</style>

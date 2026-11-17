@@ -13,6 +13,8 @@
 // turned on, then re-run as the source is edited, and stop when it is
 // turned off. The homepage hero goes live on idle and
 // re-evaluates its source as it is edited, and its code fits at every width.
+// At 390px the header's links collapse into a menu (a disclosure) on the
+// homepage and /play, and the docs' Starlight menu carries the same links.
 // Then scripts/redirects-e2e.mjs checks the redirect pages for the old
 // addresses against the same build.
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
@@ -382,6 +384,56 @@ try {
     await card.locator("[data-run-btn]").click();
     await card.locator(".cm-content").waitFor();
     await card.locator(".gg-run-live").waitFor();
+  });
+
+  await check("at 390px the header's links collapse into a menu on home, /play and the docs", async () => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    for (const path of ["/", "/play/"]) {
+      await p.goto(new URL(path, base).href);
+      assert(await p.locator(".gg-nav").isHidden(), `${path}: header links still shown`);
+      const button = p.getByRole("button", { name: "Menu" });
+      assert(await button.isVisible(), `${path}: no menu button`);
+      assert((await button.getAttribute("aria-expanded")) === "false", `${path}: menu not collapsed`);
+      const panel = p.locator(`#${await button.getAttribute("aria-controls")}`);
+      assert(await panel.isHidden(), `${path}: menu panel shown before a press`);
+      // Keyboard: Enter opens it, its links are reachable, Escape closes it.
+      await button.focus();
+      await p.keyboard.press("Enter");
+      assert((await button.getAttribute("aria-expanded")) === "true", `${path}: Enter did not open the menu`);
+      assert(await panel.getByRole("link", { name: /Playground/ }).isVisible(), `${path}: no Playground link in the menu`);
+      assert(await panel.locator("gg-theme-select select").isVisible(), `${path}: no theme select in the menu`);
+      await p.keyboard.press("Tab");
+      assert(await p.evaluate(() => document.activeElement?.closest("[data-menu]") !== null), `${path}: Tab does not reach the menu`);
+      await p.keyboard.press("Escape");
+      assert((await button.getAttribute("aria-expanded")) === "false" && (await panel.isHidden()), `${path}: Escape did not close the menu`);
+      assert(await button.evaluate((b) => b === document.activeElement), `${path}: focus not back on the menu button`);
+      // A click outside closes it too.
+      await button.click();
+      await p.mouse.click(200, 800);
+      assert(await panel.isHidden(), `${path}: a click outside did not close the menu`);
+      // Widening past the breakpoint closes it, and the links return.
+      await button.click();
+      await p.setViewportSize({ width: 1000, height: 844 });
+      // Hidden when wide, so out of the accessibility tree: find it by its hook.
+      const hook = p.locator("[data-menu-btn]");
+      await p.waitForFunction(() => document.querySelector("[data-menu-btn]").getAttribute("aria-expanded") === "false", null, { timeout: 2000 }).catch(() => {});
+      assert((await hook.getAttribute("aria-expanded")) === "false" && (await panel.isHidden()), `${path}: widening did not close the menu`);
+      assert(await p.locator(".gg-nav").isVisible(), `${path}: header links not back when wide`);
+      await p.setViewportSize({ width: 390, height: 844 });
+    }
+    // The docs keep Starlight's menu, which carries the same links.
+    await p.goto(new URL("/docs/guide/string-interpolation/", base).href);
+    await p.locator(".sl-menu-button").click();
+    assert(await p.locator("#starlight__sidebar").getByRole("link", { name: /Playground/ }).isVisible(), "docs menu has no Playground link");
+    // Nothing overflows the narrowest phone.
+    await p.setViewportSize({ width: 320, height: 700 });
+    for (const path of ["/", "/play/", "/docs/"]) {
+      await p.goto(new URL(path, base).href);
+      const over = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert(over <= 0, `${path} at 320px overflows by ${over}px`);
+    }
+    await ctx.close();
   });
 
   await check("theme is light by default, and a choice carries to the docs", async () => {
