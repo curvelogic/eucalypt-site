@@ -10,6 +10,7 @@ import "../vendor/highlight.css";
 import engine from "../vendor/eucalypt.json";
 import { initEvaluator, run, runExpr, getFormats } from "./evaluator";
 import { createEditor, createViewer } from "./editor";
+import { createOutputView, type OutputView } from "./output";
 import { EXAMPLES } from "./examples";
 import { decodeState, writeStateToUrl, copyShareLink } from "./share";
 import { fetchGitHubFile, gitHubHash, parseGitHubLink, sourceUrl, type GitHubFile } from "./github";
@@ -34,6 +35,7 @@ const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 // ── State ─────────────────────────────────────────────────────────────────────
 
 let editor: EditorView | null = null;
+let output: OutputView | null = null;
 let isRunning = false;
 
 function getSource(): string {
@@ -72,14 +74,14 @@ function runCode(): void {
   try {
     const result = mode === "expr" ? runExpr(source, format) : run(source, format);
     if (result.success && result.output !== undefined) {
-      outputEl.textContent = result.output;
-      outputEl.className = "success";
+      output?.show(result.output, format);
+      outputEl.classList.remove("hidden");
       errorPanel.classList.add("hidden");
       statusIndicator.textContent = "✓";
       statusIndicator.className = "success";
     } else if (result.error) {
-      outputEl.textContent = "";
-      outputEl.className = "";
+      output?.show("", format);
+      outputEl.classList.add("hidden");
       errorMessage.textContent = result.error.message;
       const notes = result.error.notes ?? [];
       errorNotes.textContent = notes.join("\n");
@@ -89,7 +91,8 @@ function runCode(): void {
       statusIndicator.className = "error";
     }
   } catch (e) {
-    outputEl.textContent = "";
+    output?.show("", format);
+    outputEl.classList.add("hidden");
     errorMessage.textContent = String(e);
     errorNotes.textContent = "";
     errorNotes.style.display = "none";
@@ -207,6 +210,7 @@ async function initPlayground(hash: string): Promise<void> {
     initEvaluator(),
   ]);
   editor = createEditor(editorContainer, initialSource, highlighter, runCode);
+  output = createOutputView(outputEl);
   runBtn.addEventListener("click", runCode);
 
   populateFormats();

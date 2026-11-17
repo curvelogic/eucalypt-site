@@ -3,7 +3,7 @@
 //   npm run build && node scripts/screenshots.mjs DIR [--scale N] [--full]
 //
 // Serves dist/ with `astro preview` and saves home, a docs page and /play
-// in each theme to DIR.
+// (running an example) in each theme to DIR.
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -32,10 +32,13 @@ await new Promise((resolve, reject) => {
   server.on("exit", (code) => reject(new Error(`astro preview exited with ${code}`)));
 });
 
+// /play opens on a share link, so it runs and shows highlighted output.
+const playSource = 'service(n): {\n  name: "web-{n}"\n  port: 8080 + n\n  tier: (n = 0) then(:primary, :replica)\n}\n\nservices: range(0, 3) map(service)\n';
+const playHash = Buffer.from(JSON.stringify({ source: playSource, format: "yaml" })).toString("base64");
 const pages = [
   ["home", "/"],
   ["docs", "/docs/guide/expressions-and-pipelines/"],
-  ["play", "/play/"],
+  ["play", `/play/#${playHash}`],
 ];
 const browser = await chromium.launch();
 try {

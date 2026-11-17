@@ -23,7 +23,7 @@ Write and run eucalypt in the browser, with output in YAML, JSON, TOML, text, ED
 
 - **Live editor** — CodeMirror 6, following the site's light or dark theme, with line numbers and tree-sitter syntax highlighting, identical to eucalypt's own highlighted HTML (`cargo xtask highlight-html`)
 - **Instant evaluation** — Eucalypt runs entirely in the browser via WebAssembly
-- **Multiple output formats** — YAML, JSON, TOML, text, EDN, HTML
+- **Multiple output formats** — YAML, JSON, TOML, text, EDN, HTML; YAML, JSON and TOML output is highlighted in the site's light or dark theme
 - **Built-in examples** — Hello World, list operations, string processing, functions, conditionals, and more
 - **Sharing** — Share your code via URL (state compressed into the hash fragment)
 - **Repository files** — `#gh=<owner>/<repo>/<ref>/<path>.eu` shows a `.eu` file from a public GitHub repository, highlighted and read-only, with a link back to its source; `&L5` or `&L5-L12` picks out lines (click or shift-click a line number). The ref is a branch, tag or commit without a `/`. Repository files are shown, never run
