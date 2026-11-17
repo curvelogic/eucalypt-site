@@ -98,9 +98,12 @@ build too.
 
 ### Deployment
 
-`.github/workflows/deploy.yml` deploys to GitHub Pages. It is paused (manual
-only) until the site is served at eucalypt.curvelogic.info: it is built for
-the root of a domain, not for the project URL.
+Pushes to `main` deploy the site to Cloudflare, as a Worker with static
+assets on the custom domain eucalypt.curvelogic.info
+(`.github/workflows/deploy.yml`, configured by `wrangler.jsonc`). The build
+job has no secrets; the deploy job runs `wrangler deploy` with the
+repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+`npx wrangler dev` serves `dist/` as the Worker would.
 
 ## Architecture
 
