@@ -1,0 +1,224 @@
+---
+import Site from "../layouts/Site.astro";
+import HeroEditor from "../components/HeroEditor.astro";
+import Snippet from "../components/Snippet.astro";
+import Mark from "../components/Mark.astro";
+import { CLI, HERO, LAZY, TOUR } from "../site/examples";
+import { output, playLink } from "../site/engine";
+import "../styles/home.css";
+
+const tour = await Promise.all(
+  TOUR.map(async (t) => ({ ...t, output: await output(t.title, t.source, "yaml"), link: await playLink(t.source) })),
+);
+const lazyToml = await output("lazy pillar", LAZY, "toml");
+const layersToml = (await output("data-native pillar", HERO[0].source, "toml"))
+  .split("\n")
+  .slice(0, 3)
+  .join("\n");
+const brew = "brew install curvelogic/homebrew-tap/eucalypt";
+const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eucalypt/master/install.sh | sh";
+---
+
+<Site title="eucalypt: a little language for YAML, JSON and TOML">
+  <main class="home">
+    <section class="hero">
+      <div class="w hero-grid">
+        <div class="hero-copy">
+          <p class="kick">eucalypt · functional data language</p>
+          <h1>A little language for <span class="lf">YAML, JSON and TOML.</span></h1>
+          <p class="sub">
+            Generate, template and transform structured data with a lazy, functional language and a command-line tool that
+            reads and writes the formats you already use.
+          </p>
+          <div class="ctas">
+            <a class="btn pri" href="/docs/">Read the guide</a>
+            <a class="btn sec" href="/play/">Open the playground</a>
+          </div>
+          <div class="install"><span class="p">$</span> <code>{brew}</code></div>
+          <p class="proof"><i></i>Every output in this editor was produced by the eu engine when the page was built.</p>
+        </div>
+        <HeroEditor />
+      </div>
+    </section>
+
+    <section class="s alt" id="formats">
+      <div class="w">
+        <div class="s-h">
+          <p class="kick">It speaks your formats</p>
+          <h2>Reads what you have. Writes what you need.</h2>
+          <p>
+            YAML, JSON, JSON Lines, TOML, EDN, XML, CSV and text in; YAML, JSON, TOML, EDN, HTML, text and eucalypt itself
+            out. Mix them on one command line.
+          </p>
+        </div>
+        <div class="pairs">
+          <div class="pair">
+            <h3>Embedded in YAML</h3>
+            <p>Tag a value with <code>!eu</code> and keep the rest of the file as it is.</p>
+            <Snippet title="config.yaml" code={CLI.embedSource} lang="yaml" />
+            <span class="arrow">eu config.yaml</span>
+            <Snippet title="output" code={CLI.embedOutput} lang="yaml" output />
+          </div>
+          <div class="pair">
+            <h3>CSV in, totals out</h3>
+            <p>Import a file as a named input and process it like any other data.</p>
+            <Snippet title="staff.csv" code={CLI.csv} lang="csv" />
+            <Snippet title="hours.eu" code={CLI.hoursSource} />
+            <span class="arrow">eu hours.eu</span>
+            <Snippet title="output" code={CLI.hoursOutput} lang="yaml" output />
+          </div>
+          <div class="pair">
+            <h3>A one-liner in the shell</h3>
+            <p>Query structured data without writing a file. Here, JSON out with <code>-j</code>.</p>
+            <Snippet title="terminal" code={CLI.shell} lang="shellsession" />
+            <Snippet title="stdout" code={CLI.shellOutput} lang="json" output />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="why">
+      <div class="w">
+        <div class="s-h">
+          <p class="kick">Why eucalypt</p>
+          <h2>Three things it is, and what each one means.</h2>
+        </div>
+        <div class="pillars">
+          <div class="pillar">
+            <h3>Data-native</h3>
+            <p>
+              Blocks are mappings and lists are lists. You build the data structure itself, so there is no indentation to
+              template and no quoting to escape.
+            </p>
+            <Snippet title="output as YAML, JSON or TOML" code={layersToml} lang="toml" output />
+            <a class="more" href="/docs/welcome/what-is-eucalypt/">What eucalypt is for →</a>
+          </div>
+          <div class="pillar">
+            <h3>Lazy and functional</h3>
+            <p>Nothing is evaluated until the output needs it, so infinite lists and unused branches cost nothing.</p>
+            <Snippet title="powers.eu" code={LAZY} />
+            <Snippet title="eu -x toml powers.eu" code={lazyToml} lang="toml" output />
+            <a class="more" href="/docs/understanding/lazy-evaluation/">Lazy evaluation →</a>
+          </div>
+          <div class="pillar">
+            <h3>Gradually typed</h3>
+            <p>Annotate where it helps. The checker warns without stopping evaluation, unless you pass <code>--strict</code>.</p>
+            <Snippet title="types.eu" code={CLI.typesSource} />
+            <Snippet title="stderr" code={CLI.typesWarning} lang="text" output class="warn" />
+            <a class="more" href="/docs/guide/type-checking/">Type checking →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="s alt" id="tour">
+      <div class="w">
+        <div class="s-h">
+          <p class="kick">A short tour</p>
+          <h2>Six ideas, each a line or two long.</h2>
+          <p>Every snippet runs. Open one in the playground to change it.</p>
+        </div>
+        <div class="tour">
+          {
+            tour.map((t) => (
+              <div class="tcard">
+                <h3>
+                  {t.title}
+                  <small>{t.key}</small>
+                </h3>
+                <div class="duo">
+                  <Snippet code={t.source} plain />
+                  <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
+                </div>
+                <a class="more" href={t.link}>
+                  Open in the playground →
+                </a>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="install">
+      <div class="w">
+        <div class="s-h">
+          <p class="kick">Get started</p>
+          <h2>Install it, then point your editor at it.</h2>
+        </div>
+        <div class="gs">
+          <div class="gs-l">
+            <span class="os">macOS · Homebrew</span>
+            <div class="install"><span class="p">$</span> <code>{brew}</code></div>
+            <span class="os">Linux and macOS · install script</span>
+            <div class="install"><span class="p">$</span> <code>{installScript}</code></div>
+            <span class="os">From source, in a clone of the repository</span>
+            <div class="install"><span class="p">$</span> <code>cargo install --path .</code></div>
+            <a class="more" href="/docs/welcome/quick-start/">Quick start →</a>
+          </div>
+          <div class="gs-r">
+            <h3>Editor support</h3>
+            <div class="eds">
+              <div class="edrow">
+                <span class="ic">VS</span>
+                <div><b>VS Code</b><br /><span>The eucalypt extension starts the language server for you.</span></div>
+              </div>
+              <div class="edrow">
+                <span class="ic">λ</span>
+                <div><b>Emacs</b><br /><span>eucalypt-mode, with eglot for the language server.</span></div>
+              </div>
+              <div class="edrow">
+                <span class="ic">eu</span>
+                <div>
+                  <b>Any LSP client</b><br /><span><code>eu lsp</code> speaks the Language Server Protocol over stdio.</span>
+                </div>
+              </div>
+            </div>
+            <a class="more" href="/docs/guide/lsp/">Language server →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="s alt" id="learn">
+      <div class="w">
+        <div class="s-h">
+          <p class="kick">Learn</p>
+          <h2>Start where you are.</h2>
+        </div>
+        <div class="learn">
+          <a class="lcard" href="/docs/welcome/quick-start/"
+            ><span class="k">New to eucalypt</span><h3>Quick start</h3><p>Install, run your first file, read the output.</p></a
+          >
+          <a class="lcard" href="/docs/welcome/by-example/"
+            ><span class="k">Learning by doing</span><h3>Eucalypt by example</h3><p>Worked problems, from JSON to YAML to reports.</p></a
+          >
+          <a class="lcard" href="/docs/guide/blocks-and-declarations/"
+            ><span class="k">Going deeper</span><h3>The guide</h3><p>Blocks, pipelines, anaphora, imports, types.</p></a
+          >
+          <a class="lcard" href="/docs/reference/prelude/"
+            ><span class="k">Looking something up</span><h3>Prelude reference</h3><p>Every built-in function, by category.</p></a
+          >
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="ftr">
+    <div class="w">
+      <div>
+        <a class="wm" href="/"><Mark size={26} /><span>eucalypt</span></a>
+        <small>MIT or Apache-2.0 · Curve Logic</small>
+      </div>
+      <div class="cols">
+        <div><b>Learn</b><a href="/docs/">Docs</a><a href="/play/">Playground</a><a href="/docs/reference/prelude/">Prelude</a></div>
+        <div>
+          <b>Project</b><a href="https://github.com/curvelogic/eucalypt">GitHub</a><a
+            href="https://github.com/curvelogic/eucalypt/releases">Releases</a
+          ><a href="https://github.com/curvelogic/eucalypt/blob/master/CHANGELOG.md">Changelog</a>
+        </div>
+        <div><b>Tools</b><a href="/docs/guide/lsp/">Language server</a><a href="/docs/reference/cli/">Command line</a></div>
+      </div>
+    </div>
+  </footer>
+</Site>

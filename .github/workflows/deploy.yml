@@ -1,8 +1,11 @@
 name: Deploy to GitHub Pages
 
+# Paused: the site is built for the root of eucalypt.curvelogic.info, and
+# would not work at the current project URL (/eucalypt-playground/). The
+# deployment change, which the owner merges, sets the custom domain and turns
+# deploys on push back on. Until then the playground already deployed stays
+# as it is. Do not run this by hand before that change is merged.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,38 @@
+---
+/**
+ * The grove behind the page. "full" on the homepage; "faint", at about half
+ * strength, on the docs, where it shows only in the margins. /play has none.
+ */
+import { groveSvg } from "./grove";
+
+interface Props {
+  strength?: "full" | "faint";
+}
+const { strength = "full" } = Astro.props;
+---
+
+<div class:list={["gg-grove", strength]} set:html={groveSvg()} />
+
+<style>
+  .gg-grove {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: var(--gg-grove-strength);
+  }
+  .gg-grove.faint {
+    opacity: calc(var(--gg-grove-strength) * 0.56);
+  }
+  .gg-grove :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  @media print {
+    .gg-grove {
+      display: none;
+    }
+  }
+</style>

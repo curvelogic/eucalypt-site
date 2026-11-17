@@ -1,0 +1,72 @@
+---
+/**
+ * /play: the playground, inside the site's shell. The markup is the
+ * playground's own (src/main.ts wires it up); only the page around it is
+ * the site's. No grove here: the editor fills the page.
+ */
+import Site from "../../layouts/Site.astro";
+---
+
+<Site title="Playground · eucalypt" description="Write and run eucalypt in the browser." active="play" grove={false} bodyClass="play">
+  <div id="app">
+    <header id="toolbar">
+      <div id="toolbar-left">
+        <a id="engine-version" target="_blank" rel="noopener"></a>
+      </div>
+      <div id="toolbar-right" class="playground-only">
+        <select id="example-select" title="Load an example">
+          <option value="">Examples…</option>
+        </select>
+        <select id="mode-select" title="Input mode">
+          <option value="unit">Unit</option>
+          <option value="expr">Expr</option>
+        </select>
+        <select id="format-select" title="Output format">
+          <option value="yaml">YAML</option>
+          <option value="json">JSON</option>
+          <option value="toml">TOML</option>
+          <option value="text">Text</option>
+        </select>
+        <button id="run-btn" title="Run (Ctrl+Enter)">▶ Run</button>
+        <button id="share-btn" title="Copy shareable link">Share</button>
+      </div>
+    </header>
+
+    <div id="view-bar" class="viewer-only">
+      <span id="view-title"></span>
+      <span id="view-note">Read-only view of a repository file: it is shown, not run.</span>
+      <a id="view-source" target="_blank" rel="noopener">View source on GitHub</a>
+      <a id="view-playground" href="./">Open the playground</a>
+    </div>
+    <div id="view-error" class="viewer-only hidden" role="alert"></div>
+
+    <main id="panes">
+      <div id="editor-pane">
+        <div id="editor-container"></div>
+      </div>
+      <div id="divider" class="playground-only"></div>
+      <div id="output-pane" class="playground-only">
+        <div id="output-header">
+          <span id="output-label">Output</span>
+          <span id="status-indicator"></span>
+        </div>
+        <pre id="output"></pre>
+        <div id="error-panel" class="hidden">
+          <div id="error-message"></div>
+          <div id="error-notes"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="loading-overlay">
+      <div id="loading-content">
+        <div id="loading-spinner"></div>
+        <div id="loading-text">Loading Eucalypt…</div>
+      </div>
+    </div>
+  </div>
+</Site>
+
+<script>
+  import "../../main.ts";
+</script>

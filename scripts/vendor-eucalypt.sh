@@ -16,8 +16,8 @@
 # Needs git, cargo, the wasm32-unknown-unknown target and wasm-pack.
 # WASM_PACK_NO_OPT=1 skips wasm-opt (a larger engine, for local builds
 # where wasm-pack cannot fetch binaryen); CI always optimises.
-# EUCALYPT_DIR names an existing checkout to use (it must be at the pinned
-# commit); otherwise the pinned commit is fetched into .eucalypt/.
+# The checkout comes from scripts/fetch-eucalypt.sh: EUCALYPT_DIR names an
+# existing one at the pinned commit; otherwise it is fetched into .eucalypt/.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -35,22 +35,7 @@ pin() { node -e "process.stdout.write(require('./eucalypt-pin.json').$1)"; }
 repo="$(pin repository)"
 commit="$(pin commit)"
 
-src="${EUCALYPT_DIR:-$root/.eucalypt}"
-if [ -z "${EUCALYPT_DIR:-}" ]; then
-  if [ ! -d "$src/.git" ]; then
-    git init -q "$src"
-    git -C "$src" remote add origin "https://github.com/$repo.git"
-  fi
-  if [ "$(git -C "$src" rev-parse -q --verify HEAD || true)" != "$commit" ]; then
-    git -C "$src" fetch -q --depth 1 origin "$commit"
-    git -C "$src" checkout -q --detach FETCH_HEAD
-  fi
-fi
-head="$(git -C "$src" rev-parse HEAD)"
-if [ "$head" != "$commit" ]; then
-  echo "error: $src is at $head, but eucalypt-pin.json pins $commit" >&2
-  exit 1
-fi
+src="$(scripts/fetch-eucalypt.sh)"
 
 out="$root/vendor"
 rm -rf "$out"

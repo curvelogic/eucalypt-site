@@ -1,0 +1,25 @@
+---
+/**
+ * The mark: an all-green sickle leaf inside green braces. The leaf's vein is
+ * cut in the page ground, so it reads on either theme.
+ */
+interface Props {
+  size?: number;
+}
+const { size = 30 } = Astro.props;
+const width = Math.round((size * 64) / 48);
+---
+
+<svg class="gg-mark" width={width} height={size} viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+  <path
+    d="M15 5c-5 0-6.5 3-6.5 8v5c0 3.5-1.6 5.6-5 6 3.4.4 5 2.5 5 6v5c0 5 1.5 8 6.5 8M49 5c5 0 6.5 3 6.5 8v5c0 3.5 1.6 5.6 5 6-3.4.4-5 2.5-5 6v5c0 5-1.5 8-6.5 8"
+    fill="none"
+    stroke="var(--gg-leaf)"
+    stroke-width="3.4"
+    stroke-linecap="round"
+    stroke-linejoin="round"></path>
+  <g transform="translate(12 5.2) scale(.8)">
+    <path d="M8 42C9 24 22 8 42 5c-1 19-14 35-34 37z" fill="var(--gg-leaf)"></path>
+    <path d="M8 42C17 30 27 19 38 10" stroke="var(--gg-bg)" stroke-width="2.4" fill="none" stroke-linecap="round"></path>
+  </g>
+</svg>
