@@ -176,19 +176,10 @@ body.play {
 
 #output {
   flex: 1;
-  overflow: auto;
-  padding: 14px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: var(--text);
+  min-height: 0;
+  overflow: hidden;
 }
-
-#output.success {
-  color: var(--text);
-}
+#output.hidden { display: none; }
 
 /* ── Error panel ── */
 

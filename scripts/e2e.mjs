@@ -54,7 +54,7 @@ function assert(cond, message) {
 
 /** Per-line, per-character innermost ts- class list of the rendered editor. */
 async function editorClasses(page) {
-  return page.$$eval(".cm-content .cm-line", (lines) =>
+  return page.$$eval("#editor-container .cm-content .cm-line", (lines) =>
     lines.map((line) => {
       const out = [];
       const walk = (node, cls) => {
@@ -123,10 +123,46 @@ try {
     assert(out.includes("hello: world"), `output ${out}`);
   });
 
+  await check("colours YAML, JSON and TOML output in either theme; EDN stays plain", async () => {
+    const link = (source, format) => base + "#" + Buffer.from(JSON.stringify({ source, format })).toString("base64");
+    // The colour of each highlighted run in the output, by its text.
+    const runs = () =>
+      page.$$eval("#output .cm-line span", (spans) => Object.fromEntries(spans.map((s) => [s.textContent.trim(), getComputedStyle(s).color])));
+    // What a Ghost Gum syntax token resolves to in the current theme.
+    const token = (name) =>
+      page.$eval("#output", (out, name) => {
+        const probe = out.appendChild(document.createElement("span"));
+        probe.style.color = `var(--gg-sx-${name})`;
+        const colour = getComputedStyle(probe).color;
+        probe.remove();
+        return colour;
+      }, name);
+    const source = 'service: { name: "web" port: 8080 live: true }';
+    const want = { yaml: ["service", "8080"], json: ['"service"', "8080"], toml: ["[service]", "8080"] };
+    for (const [format, [key, num]] of Object.entries(want)) {
+      await open(link(source, format));
+      await page.waitForSelector("#output .cm-line span");
+      for (const theme of ["light", "dark"]) {
+        await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+        const r = await runs();
+        assert(r[key] === (await token("key")), `${format}, ${theme}: key ${key} is ${r[key]}`);
+        assert(r[num] === (await token("num")), `${format}, ${theme}: number ${num} is ${r[num]}`);
+        const str = format === "yaml" ? null : '"web"';
+        if (str) assert(r[str] === (await token("string")), `${format}, ${theme}: string is ${r[str]}`);
+      }
+      if (shots && format === "toml") await page.screenshot({ path: join(shots, "output-toml-dark.png") });
+      await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
+    }
+    await open(link(source, "edn"));
+    await page.waitForFunction(() => document.querySelector("#output").textContent.includes("8080"));
+    const spans = await page.$$eval("#output .cm-line span", (s) => s.length);
+    assert(spans === 0, `EDN output has ${spans} highlighted runs`);
+  });
+
   await check("highlights pasted source as xtask highlight-html does", async () => {
     for (const name of files) {
       const source = readFileSync(join(fixtures, `${name}.eu`), "utf8").replace(/\n+$/, "");
-      await page.click(".cm-content");
+      await page.click("#editor-container .cm-content");
       await page.keyboard.press("ControlOrMeta+A");
       await page.keyboard.press("Delete");
       await page.evaluate((t) => navigator.clipboard.writeText(t), source);
@@ -152,9 +188,9 @@ try {
     await page.waitForFunction(() => document.querySelector("#share-btn").textContent === "Copied!");
     const hash = await page.evaluate(() => location.hash);
     assert(hash.startsWith("#z="), `hash ${hash.slice(0, 20)}`);
-    const before = await page.$$eval(".cm-line", (l) => l.map((x) => x.textContent).join("\n"));
+    const before = await page.$$eval("#editor-container .cm-line", (l) => l.map((x) => x.textContent).join("\n"));
     await open(base + hash);
-    const after = await page.$$eval(".cm-line", (l) => l.map((x) => x.textContent).join("\n"));
+    const after = await page.$$eval("#editor-container .cm-line", (l) => l.map((x) => x.textContent).join("\n"));
     assert(after === before, `shared source did not round-trip: ${before.length} chars became ${after.length}: ${after.slice(0, 80)}`);
   });
 
@@ -167,10 +203,10 @@ try {
   for (const name of files) {
     await check(`#gh= view of examples/aoc25/${name}.eu matches xtask highlight-html`, async () => {
       await open(`${base}#gh=${engine.repository}/${engine.commit}/examples/aoc25/${name}.eu`);
-      await page.waitForSelector(".cm-content");
+      await page.waitForSelector("#editor-container .cm-content");
       compareLines(await editorClasses(page), expectedLines(name));
       assert(!(await page.isVisible("#run-btn")), "Run is visible in a repository view");
-      assert((await page.getAttribute(".cm-content", "contenteditable")) === "false", "view is editable");
+      assert((await page.getAttribute("#editor-container .cm-content", "contenteditable")) === "false", "view is editable");
     });
   }
 
