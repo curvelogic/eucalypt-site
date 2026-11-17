@@ -306,6 +306,19 @@ body.has-problems #problems-count {
 #engine-version:hover {
   text-decoration: underline;
 }
+#engine-note {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+/* The note gives way first on narrow screens, so it never widens the page. */
+@media (max-width: 900px) {
+  #engine-note {
+    display: none;
+  }
+}
 #status-hint {
   margin-left: auto;
   overflow: hidden;
