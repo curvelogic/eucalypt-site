@@ -25,6 +25,8 @@ export interface LiveOptions {
   onOutput: (result: EvalResult, source: string) => void;
   /** Milliseconds to wait after an edit before evaluating. */
   delay?: number;
+  /** Wrap long lines instead of scrolling sideways. */
+  wrap?: boolean;
 }
 
 export interface LiveEditor {
@@ -71,13 +73,14 @@ export async function mountLiveEditor(container: HTMLElement, options: LiveOptio
   container.replaceChildren();
   const view = createEditor(container, options.source, hl, evaluate);
   view.dispatch({
-    effects: StateEffect.appendConfig.of(
+    effects: StateEffect.appendConfig.of([
       EditorView.updateListener.of((u) => {
         if (!u.docChanged) return;
         clearTimeout(timer);
         timer = setTimeout(evaluate, options.delay ?? 300);
       }),
-    ),
+      options.wrap ? EditorView.lineWrapping : [],
+    ]),
   });
 
   return {

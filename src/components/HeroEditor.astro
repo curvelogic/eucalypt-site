@@ -5,9 +5,10 @@
  * and shipped as HTML, so it shows on first paint with no engine loaded.
  * A small script switches example and format.
  *
- * This is the static stage. The live stage loads the playground's engine
- * and editor on idle or first edit and re-evaluates as the source changes
- * (docs/site-plan.md, "Hero editor").
+ * src/site/hero.ts switches example and format and, on idle or the first
+ * edit, mounts the playground's editor and engine over the pre-rendered
+ * source and re-evaluates as it changes (docs/site-plan.md, "Hero
+ * editor"). Until a source is edited, its pre-rendered output stays.
  */
 import { Code } from "astro:components";
 import grammar from "../generated/eucalypt.tmLanguage.json";
@@ -55,38 +56,58 @@ const first = examples[0];
   <div class="ed-body">
     {
       examples.map((ex, i) => (
-        <div class="ed-pair" id={`ex-${ex.id}`} role="tabpanel" data-for={ex.id} hidden={i !== 0}>
+        <div
+          class="ed-pair"
+          id={`ex-${ex.id}`}
+          role="tabpanel"
+          data-for={ex.id}
+          data-source={ex.source}
+          data-file={ex.file}
+          data-fails={ex.fails ? "" : undefined}
+          hidden={i !== 0}
+        >
           <div class="ed-src">
             <div class="pane-h">
               <span class="fn">{ex.file}</span>
             </div>
-            <Code code={ex.source} lang={grammar as any} themes={themes} defaultColor={false} class="ed-code" />
+            <div class="ed-edit" data-src tabindex="0" aria-label={`${ex.file}, editable`}>
+              <Code code={ex.source} lang={grammar as any} themes={themes} defaultColor={false} class="ed-code" />
+            </div>
           </div>
           <div class="ed-out">
             <div class="pane-h">
-              <span>{ex.fails ? "Error" : "Output"}</span>
+              <span data-label>{ex.fails ? "Error" : "Output"}</span>
               <div class="fmts" role="group" aria-label="Output format">
                 {FORMATS.map((f) => (
-                  <button type="button" class="fmt" data-fmt={f.id} disabled={ex.fails} aria-pressed={f.id === "yaml" ? "true" : "false"}>
+                  <button
+                    type="button"
+                    class="fmt"
+                    data-fmt={f.id}
+                    data-command={f.cmd}
+                    disabled={ex.fails}
+                    aria-pressed={f.id === "yaml" ? "true" : "false"}
+                  >
                     {f.label}
                   </button>
                 ))}
               </div>
             </div>
-            {ex.error && <pre class="ed-diag">{ex.error}</pre>}
+            {ex.error && <pre class="ed-diag" data-static>{ex.error}</pre>}
             {ex.outputs &&
               FORMATS.map((f) => (
-                <div data-out={f.id} hidden={f.id !== "yaml"}>
+                <div data-out={f.id} data-static hidden={f.id !== "yaml"}>
                   <Code code={ex.outputs![f.id]} lang={f.id} themes={themes} defaultColor={false} class="ed-code" />
                 </div>
               ))}
+            <pre class="ed-live" data-live aria-live="polite" hidden />
           </div>
           <div class="ed-foot">
             <span class="cmd">
               $ <b data-cmd>eu {ex.file}</b>
             </span>
             <span class="sp" />
-            <a href={ex.link}>Open in the playground →</a>
+            <span class="state" data-state />
+            <a href={ex.link} data-link>Open in the playground →</a>
           </div>
         </div>
       ))
@@ -94,26 +115,6 @@ const first = examples[0];
   </div>
 </div>
 
-<script define:vars={{ cmds: Object.fromEntries(FORMATS.map((f) => [f.id, f.cmd])) }}>
-  const root = document.querySelector(".gg-hero-ed");
-  const show = () => {
-    const ex = root.dataset.example;
-    const fmt = root.dataset.format;
-    for (const tab of root.querySelectorAll("[data-pick]")) tab.setAttribute("aria-selected", String(tab.dataset.pick === ex));
-    for (const pane of root.querySelectorAll("[data-for]")) {
-      pane.hidden = pane.dataset.for !== ex;
-      for (const out of pane.querySelectorAll("[data-out]")) out.hidden = out.dataset.out !== fmt;
-      for (const b of pane.querySelectorAll("[data-fmt]")) b.setAttribute("aria-pressed", String(b.dataset.fmt === fmt));
-      const cmd = pane.querySelector("[data-cmd]");
-      const file = pane.querySelector(".fn").textContent;
-      cmd.textContent = `${cmds[fmt]} ${file}`;
-    }
-  };
-  root.addEventListener("click", (e) => {
-    const pick = e.target.closest("[data-pick]");
-    const fmt = e.target.closest("[data-fmt]");
-    if (pick) root.dataset.example = pick.dataset.pick;
-    if (fmt && !fmt.disabled) root.dataset.format = fmt.dataset.fmt;
-    if (pick || fmt) show();
-  });
+<script>
+  import "../site/hero";
 </script>

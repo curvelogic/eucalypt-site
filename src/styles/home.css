@@ -169,7 +169,7 @@
 }
 .ed-pair:not([hidden]) {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   grid-template-rows: 1fr auto;
   min-height: 360px;
 }
@@ -231,7 +231,58 @@
 .ed-diag {
   color: var(--gg-err);
   white-space: pre;
+  /* Narrower than the code, so the diagnostic fits from 1280px wide. */
+  padding-inline: 10px;
 }
+/* The live stage: the playground's editor over the pre-rendered source. */
+.ed-edit {
+  --eu-bg: var(--gg-code-bg);
+  --eu-fg: var(--gg-ink);
+  min-width: 0;
+}
+.ed-edit:focus-visible {
+  outline: 2px solid var(--gg-leaf);
+  outline-offset: -2px;
+}
+.ed-edit .cm-editor {
+  max-height: 30rem;
+}
+.ed-edit .cm-scroller {
+  font-size: 13px;
+  line-height: 1.62;
+}
+.ed-edit .cm-editor.cm-focused {
+  outline: none;
+}
+/* The live editor keeps the pre-rendered layout: no gutter, and long lines
+   wrap in both, so neither scrolls sideways. */
+.ed-edit .cm-gutters {
+  display: none;
+}
+.ed-edit .cm-content {
+  padding: 12px 0;
+}
+.ed-edit .cm-line {
+  padding: 0 16px;
+}
+.gg-hero-ed .astro-code,
+.ed-live {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ed-live {
+  margin: 0;
+  padding: 12px 16px;
+  font: 13px/1.62 var(--gg-mono);
+  color: var(--gg-ink);
+}
+.ed-live.err {
+  color: var(--gg-err);
+}
+.ed-foot .state:empty {
+  display: none;
+}
+
 .ed-foot {
   grid-column: 1 / -1;
   display: flex;
@@ -604,8 +655,18 @@
 }
 
 /* Narrow screens */
+/*
+ * The hero stacks, copy over editor, until the editor beside the copy is
+ * wide enough for its examples' lines (from 1280px). Side by side any
+ * narrower, the source pane was too narrow: at 1101px the first example
+ * overflowed by 19px.
+ */
+@media (max-width: 1279px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (max-width: 1100px) {
-  .hero-grid,
   .pair,
   .pillar,
   .tour,
