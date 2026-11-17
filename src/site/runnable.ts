@@ -58,6 +58,11 @@ const BROWSER_CANNOT_RUN: { page: string; contains: string; reason: string }[] =
     contains: "dijkstra(moves, goal?, start): {",
     reason: "Dijkstra over a 141 × 141 grid takes more steps than the browser engine's step limit allows",
   },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "the stones that stone `x` becomes in one step",
+    reason: "75 blinks take more steps than the browser engine's step limit allows",
+  },
 ];
 
 /** The page in eucalypt a file was imported from, e.g. docs/guide/anaphora.md. */
