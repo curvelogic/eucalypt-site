@@ -63,6 +63,16 @@ const BROWSER_CANNOT_RUN: { page: string; contains: string; reason: string }[] =
     contains: "the stones that stone `x` becomes in one step",
     reason: "75 blinks take more steps than the browser engine's step limit allows",
   },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "run(100000, 1)",
+    reason: "100,000 iterations take more steps than the browser engine's step limit allows",
+  },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "times(+ 3, 100000, 0)",
+    reason: "100,000 iterations take more steps than the browser engine's step limit allows",
+  },
 ];
 
 /** The page in eucalypt a file was imported from, e.g. docs/guide/anaphora.md. */
