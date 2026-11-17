@@ -4,11 +4,16 @@ import HeroEditor from "../components/HeroEditor.astro";
 import Snippet from "../components/Snippet.astro";
 import Mark from "../components/Mark.astro";
 import { CLI, HERO, LAZY, TOUR } from "../site/examples";
-import { output, playLink } from "../site/engine";
+import { diagnostic, output, playLink } from "../site/engine";
 import "../styles/home.css";
 
 const tour = await Promise.all(
-  TOUR.map(async (t) => ({ ...t, output: await output(t.title, t.source, "yaml"), link: await playLink(t.source) })),
+  TOUR.map(async (t) => ({
+    ...t,
+    output: t.fails ? null : await output(t.title, t.source, "yaml"),
+    error: t.fails ? await diagnostic(t.title, t.fails, t.source) : null,
+    link: await playLink(t.source),
+  })),
 );
 const lazyToml = await output("lazy pillar", LAZY, "toml");
 const layersToml = (await output("data-native pillar", HERO[0].source, "toml"))
@@ -140,7 +145,8 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
                 </h3>
                 <div class="duo">
                   <Snippet code={t.source} plain />
-                  <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
+                  {t.output && <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />}
+                  {t.error && <pre class="tcard-err">{t.error}</pre>}
                 </div>
                 <a class="more" href={t.link}>
                   Open in the playground →

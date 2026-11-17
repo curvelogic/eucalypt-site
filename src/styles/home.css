@@ -430,6 +430,15 @@
 .tcard .duo > .gg-snip + .gg-snip {
   border-top: 1px dashed var(--gg-code-line);
 }
+.tcard-err {
+  margin: 0;
+  padding: 10px 14px;
+  font: 12.5px/1.6 var(--gg-mono);
+  color: var(--gg-err);
+  background: var(--gg-out-bg);
+  border-top: 1px dashed var(--gg-code-line);
+  white-space: pre-wrap;
+}
 .tcard .astro-code {
   font-size: 12.5px;
 }
@@ -615,4 +624,11 @@
     margin-left: 0;
     gap: 28px;
   }
+}
+
+/* After the rules above: their `font` shorthands reset ligatures, and code
+   is shown as typed ("//=>", not "//⇒"). */
+.home :is(pre, code, kbd, small, .pane-h, .ed-foot) {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
