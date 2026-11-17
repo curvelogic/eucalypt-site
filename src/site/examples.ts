@@ -80,8 +80,8 @@ powers: iterate(* 2, 1) take(8)`,
   },
 ];
 
-/** "A short tour": six ideas, each a line or two. `fails` names the file
- * of an example whose point is the error it reports. */
+/** The tour ("Key ideas in short snippets"). `fails` names the file of an
+ * example whose point is the error it reports. */
 export const TOUR: { title: string; key: string; source: string; fails?: string }[] = [
   { title: "Pipelines", key: "catenation", source: "last: [1, 2, 3, 4, 5] reverse head" },
   { title: "Anaphora", key: "_0, {}", source: 'squares: [1, 2, 3, 4] map(_0 * _0)\nlabels: [:a, :b] map("item-{}")' },

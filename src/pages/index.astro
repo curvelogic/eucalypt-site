@@ -102,27 +102,39 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
         </div>
         <div class="pillars">
           <div class="pillar">
-            <h3>Data-native</h3>
-            <p>
-              Blocks are mappings and lists are lists. You build the data structure itself, so there is no indentation to
-              template and no quoting to escape.
-            </p>
-            <Snippet title="output as YAML, JSON or TOML" code={layersToml} lang="toml" output />
-            <a class="more" href="/docs/welcome/what-is-eucalypt/">What eucalypt is for →</a>
+            <div class="pillar-text">
+              <h3>Data-native</h3>
+              <p>
+                Blocks are mappings and lists are lists. You build the data structure itself, so there is no indentation to
+                template and no quoting to escape.
+              </p>
+              <a class="more" href="/docs/welcome/what-is-eucalypt/">What eucalypt is for →</a>
+            </div>
+            <div class="pillar-code">
+              <Snippet title="output as YAML, JSON or TOML" code={layersToml} lang="toml" output />
+            </div>
           </div>
           <div class="pillar">
-            <h3>Lazy and functional</h3>
-            <p>Nothing is evaluated until the output needs it, so infinite lists and unused branches cost nothing.</p>
-            <Snippet title="powers.eu" code={LAZY} />
-            <Snippet title="eu -x toml powers.eu" code={lazyToml} lang="toml" output />
-            <a class="more" href="/docs/understanding/lazy-evaluation/">Lazy evaluation →</a>
+            <div class="pillar-text">
+              <h3>Lazy and functional</h3>
+              <p>Nothing is evaluated until the output needs it, so infinite lists and unused branches cost nothing.</p>
+              <a class="more" href="/docs/understanding/lazy-evaluation/">Lazy evaluation →</a>
+            </div>
+            <div class="pillar-code">
+              <Snippet title="powers.eu" code={LAZY} />
+              <Snippet title="eu -x toml powers.eu" code={lazyToml} lang="toml" output />
+            </div>
           </div>
           <div class="pillar">
-            <h3>Gradually typed</h3>
-            <p>Annotate where it helps. The checker warns without stopping evaluation, unless you pass <code>--strict</code>.</p>
-            <Snippet title="types.eu" code={CLI.typesSource} />
-            <Snippet title="stderr" code={CLI.typesWarning} lang="text" output class="warn" />
-            <a class="more" href="/docs/guide/type-checking/">Type checking →</a>
+            <div class="pillar-text">
+              <h3>Gradually typed</h3>
+              <p>Annotate where it helps. The checker warns without stopping evaluation, unless you pass <code>--strict</code>.</p>
+              <a class="more" href="/docs/guide/type-checking/">Type checking →</a>
+            </div>
+            <div class="pillar-code">
+              <Snippet title="types.eu" code={CLI.typesSource} />
+              <Snippet title="stderr" code={CLI.typesWarning} lang="text" output class="warn" />
+            </div>
           </div>
         </div>
       </div>
