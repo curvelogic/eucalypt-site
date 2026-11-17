@@ -23,12 +23,16 @@ const loadingOverlay = document.getElementById("loading-overlay")!;
 const editorContainer = document.getElementById("editor-container")!;
 const outputEl = document.getElementById("output")!;
 const errorPanel = document.getElementById("error-panel")!;
+const problemsCount = document.getElementById("problems-count")!;
+const outputLabel = document.getElementById("output-label")!;
+const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement;
+const engineState = document.getElementById("engine-state")!;
 const errorMessage = document.getElementById("error-message")!;
 const errorNotes = document.getElementById("error-notes")!;
 const statusIndicator = document.getElementById("status-indicator")!;
 const runBtn = document.getElementById("run-btn")! as HTMLButtonElement;
 const shareBtn = document.getElementById("share-btn")! as HTMLButtonElement;
-const formatSelect = document.getElementById("format-select") as HTMLSelectElement;
+const formatTabs = document.getElementById("format-tabs")!;
 const exampleSelect = document.getElementById("example-select") as HTMLSelectElement;
 const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 
@@ -37,6 +41,17 @@ const modeSelect = document.getElementById("mode-select") as HTMLSelectElement;
 let editor: EditorView | null = null;
 let output: OutputView | null = null;
 let isRunning = false;
+let format = "yaml";
+
+/** File extensions for the output tab's name. */
+const EXTENSIONS: Record<string, string> = { text: "txt" };
+
+function setFormat(f: string): void {
+  format = f;
+  for (const tab of formatTabs.querySelectorAll<HTMLButtonElement>("[data-fmt]")) {
+    tab.setAttribute("aria-checked", String(tab.dataset.fmt === f));
+  }
+}
 
 function getSource(): string {
   return editor?.state.doc.toString() ?? "";
@@ -59,13 +74,12 @@ function runCode(): void {
   if (isRunning) return;
   isRunning = true;
   runBtn.disabled = true;
-  runBtn.textContent = "Running…";
   statusIndicator.textContent = "";
   statusIndicator.className = "";
 
   const source = getSource();
-  const format = formatSelect.value;
   const mode = getMode();
+  outputLabel.textContent = `output.${EXTENSIONS[format] ?? format}`;
 
   // Persist state in URL
   void writeStateToUrl({ source, format, mode });
@@ -76,34 +90,36 @@ function runCode(): void {
     if (result.success && result.output !== undefined) {
       output?.show(result.output, format);
       outputEl.classList.remove("hidden");
-      errorPanel.classList.add("hidden");
+      showProblems(null);
       statusIndicator.textContent = "✓";
       statusIndicator.className = "success";
     } else if (result.error) {
       output?.show("", format);
       outputEl.classList.add("hidden");
-      errorMessage.textContent = result.error.message;
-      const notes = result.error.notes ?? [];
-      errorNotes.textContent = notes.join("\n");
-      errorNotes.style.display = notes.length ? "block" : "none";
-      errorPanel.classList.remove("hidden");
+      showProblems(result.error.message, result.error.notes ?? []);
       statusIndicator.textContent = "✗";
       statusIndicator.className = "error";
     }
   } catch (e) {
     output?.show("", format);
     outputEl.classList.add("hidden");
-    errorMessage.textContent = String(e);
-    errorNotes.textContent = "";
-    errorNotes.style.display = "none";
-    errorPanel.classList.remove("hidden");
+    showProblems(String(e));
     statusIndicator.textContent = "✗";
     statusIndicator.className = "error";
   }
 
   isRunning = false;
   runBtn.disabled = false;
-  runBtn.textContent = "▶ Run";
+}
+
+/** Show an error and its notes in the problems panel, or clear it. */
+function showProblems(message: string | null, notes: string[] = []): void {
+  document.body.classList.toggle("has-problems", message !== null);
+  errorPanel.classList.toggle("hidden", message === null);
+  problemsCount.textContent = message === null ? "No problems" : "1 error";
+  errorMessage.textContent = message ?? "";
+  errorNotes.textContent = notes.join("\n");
+  errorNotes.style.display = notes.length ? "block" : "none";
 }
 
 // ── Examples ──────────────────────────────────────────────────────────────────
@@ -122,8 +138,9 @@ function populateExamples(): void {
     const example = EXAMPLES.find((e) => e.name === name);
     if (example) {
       setSource(example.source);
-      formatSelect.value = example.format;
+      setFormat(example.format);
       modeSelect.value = example.mode ?? "unit";
+      runCode();
     }
     exampleSelect.value = "";
   });
@@ -131,30 +148,49 @@ function populateExamples(): void {
 
 // ── Format selector ───────────────────────────────────────────────────────────
 
+/** One tab per format the engine offers; choosing one runs the code in it. */
 function populateFormats(): void {
-  const formats = getFormats();
-  // Clear existing options
-  while (formatSelect.options.length > 0) formatSelect.remove(0);
-  for (const fmt of formats) {
-    const option = document.createElement("option");
-    option.value = fmt;
-    option.textContent = fmt.toUpperCase();
-    formatSelect.appendChild(option);
-  }
-  formatSelect.value = "yaml";
+  formatTabs.replaceChildren(
+    ...getFormats().map((fmt) => {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.className = "fmt";
+      tab.setAttribute("role", "radio");
+      tab.dataset.fmt = fmt;
+      tab.textContent = fmt.toUpperCase();
+      tab.addEventListener("click", () => {
+        setFormat(fmt);
+        runCode();
+      });
+      return tab;
+    }),
+  );
+  setFormat("yaml");
 }
 
 // ── Share ─────────────────────────────────────────────────────────────────────
 
 shareBtn.addEventListener("click", async () => {
   try {
-    await copyShareLink({ source: getSource(), format: formatSelect.value, mode: getMode() });
+    await copyShareLink({ source: getSource(), format, mode: getMode() });
     shareBtn.textContent = "Copied!";
   } catch {
     shareBtn.textContent = "Link in address bar";
   }
   setTimeout(() => {
     shareBtn.textContent = "Share";
+  }, 2000);
+});
+
+copyBtn.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(output?.view.state.doc.toString() ?? "");
+    copyBtn.textContent = "Copied!";
+  } catch {
+    copyBtn.textContent = "Not copied";
+  }
+  setTimeout(() => {
+    copyBtn.textContent = "Copy";
   }, 2000);
 });
 
@@ -178,6 +214,7 @@ async function initViewer(file: GitHubFile): Promise<void> {
   source.href = sourceUrl(file);
   document.title = `${file.path} · Eucalypt Playground`;
   try {
+    engineState.textContent = "Read-only";
     const [highlighter, text] = await Promise.all([loadHighlighter(), fetchGitHubFile(file)]);
     createViewer(editorContainer, text, highlighter, file.lines, (lines) => {
       const picked = { ...file, lines };
@@ -215,15 +252,16 @@ async function initPlayground(hash: string): Promise<void> {
 
   populateFormats();
   populateExamples();
-  formatSelect.value = initialFormat;
+  setFormat(initialFormat);
   modeSelect.value = initialMode;
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) document.getElementById("run-key")!.textContent = "⌘↵";
+  engineState.textContent = "Engine ready";
+  engineState.className = "ready";
 
   loadingOverlay.style.display = "none";
 
-  // Auto-run on load if there's URL content
-  if (urlState) {
-    runCode();
-  }
+  // Open with the output already there, as the design has it.
+  runCode();
 }
 
 async function init(): Promise<void> {

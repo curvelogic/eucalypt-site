@@ -27,6 +27,9 @@ Write and run eucalypt in the browser, with output in YAML, JSON, TOML, text, ED
 - **Built-in examples** — Hello World, list operations, string processing, functions, conditionals, and more
 - **Sharing** — Share your code via URL (state compressed into the hash fragment)
 - **Repository files** — `#gh=<owner>/<repo>/<ref>/<path>.eu` shows a `.eu` file from a public GitHub repository, highlighted and read-only, with a link back to its source; `&L5` or `&L5-L12` picks out lines (click or shift-click a line number). The ref is a branch, tag or commit without a `/`. Repository files are shown, never run
+- **Format tabs** — choosing a format reruns the code in it; Copy copies the output
+- **Problems panel** — an error and its notes appear under the panes, in place of the output
+- **Phone layout** — under 760px the toolbar takes two rows and the panes stack; it fits a 320px screen
 - **Keyboard shortcut** — Ctrl/Cmd+Enter to run
 
 ## Development

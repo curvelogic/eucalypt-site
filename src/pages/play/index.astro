@@ -1,37 +1,44 @@
 ---
 /**
- * /play: the playground, inside the site's shell. The markup is the
- * playground's own (src/main.ts wires it up); only the page around it is
- * the site's. No grove here: the editor fills the page.
+ * /play: the playground, inside the site's shell, laid out as the Ghost
+ * Gum design's /play: Share in the header; a toolbar with the example
+ * picker, the input mode, the format tabs and Run; source and output side
+ * by side (stacked on a phone); the problems panel; and a status line with
+ * the engine. src/main.ts wires it up. No grove here: the editor fills the
+ * page.
  */
 import Site from "../../layouts/Site.astro";
 ---
 
 <Site title="Playground · eucalypt" description="Write and run eucalypt in the browser." active="play" grove={false} bodyClass="play">
+  <button slot="tools" id="share-btn" class="gg-btn playground-only" type="button" title="Copy a link to this code">Share</button>
   <div id="app">
-    <header id="toolbar">
-      <div id="toolbar-left">
-        <a id="engine-version" target="_blank" rel="noopener"></a>
-        <span id="engine-note" class="playground-only" title="Your code runs in this page, on eucalypt's engine compiled to WebAssembly; nothing is sent to a server.">· runs in your browser (WebAssembly)</span>
-      </div>
-      <div id="toolbar-right" class="playground-only">
+    <div id="toolbar" class="playground-only">
+      <label class="tb-field">
+        <span class="sr-only">Example</span>
         <select id="example-select" title="Load an example">
           <option value="">Examples…</option>
         </select>
-        <select id="mode-select" title="Input mode">
+      </label>
+      <label class="tb-field">
+        <span class="sr-only">Input</span>
+        <select id="mode-select" title="Input: a unit of declarations, or one expression (like eu -e)">
           <option value="unit">Unit</option>
           <option value="expr">Expr</option>
         </select>
-        <select id="format-select" title="Output format">
-          <option value="yaml">YAML</option>
-          <option value="json">JSON</option>
-          <option value="toml">TOML</option>
-          <option value="text">Text</option>
-        </select>
-        <button id="run-btn" title="Run (Ctrl+Enter)">▶ Run</button>
-        <button id="share-btn" title="Copy shareable link">Share</button>
+      </label>
+      <span class="tb-space"></span>
+      <div id="format-tabs" class="fmts" role="radiogroup" aria-label="Output format">
+        {
+          ["yaml", "json", "toml", "text", "edn", "html"].map((f) => (
+            <button type="button" class="fmt" role="radio" data-fmt={f} aria-checked={f === "yaml" ? "true" : "false"}>
+              {f.toUpperCase()}
+            </button>
+          ))
+        }
       </div>
-    </header>
+      <button id="run-btn" class="run" type="button" title="Run (Ctrl+Enter)">▶ Run <kbd id="run-key">Ctrl ↵</kbd></button>
+    </div>
 
     <div id="view-bar" class="viewer-only">
       <span id="view-title"></span>
@@ -42,22 +49,37 @@ import Site from "../../layouts/Site.astro";
     <div id="view-error" class="viewer-only hidden" role="alert"></div>
 
     <main id="panes">
-      <div id="editor-pane">
+      <section id="editor-pane" aria-label="Source">
+        <div class="tabs"><span class="on">main.eu</span></div>
         <div id="editor-container"></div>
-      </div>
-      <div id="divider" class="playground-only"></div>
-      <div id="output-pane" class="playground-only">
-        <div id="output-header">
-          <span id="output-label">Output</span>
-          <span id="status-indicator"></span>
+      </section>
+      <section id="output-pane" class="playground-only" aria-label="Output">
+        <div class="tabs">
+          <span class="on" id="output-label">output.yaml</span>
+          <span id="status-indicator" role="status"></span>
+          <button id="copy-btn" class="tab-btn" type="button" title="Copy the output">Copy</button>
         </div>
         <div id="output"></div>
-        <div id="error-panel" class="hidden">
-          <div id="error-message"></div>
-          <div id="error-notes"></div>
-        </div>
-      </div>
+      </section>
     </main>
+
+    <section id="problems" class="playground-only" aria-label="Problems">
+      <div class="problems-h">
+        <span class="problems-title">Problems</span>
+        <span id="problems-count">No problems</span>
+      </div>
+      <div id="error-panel" class="hidden" role="alert">
+        <div id="error-message"></div>
+        <div id="error-notes"></div>
+      </div>
+    </section>
+
+    <footer id="status-bar">
+      <span id="engine-state">Loading engine…</span>
+      <a id="engine-version" target="_blank" rel="noopener"></a>
+      <span id="engine-note" class="playground-only" title="Your code runs in this page, on eucalypt's engine compiled to WebAssembly; nothing is sent to a server.">· runs in your browser (WebAssembly)</span>
+      <span id="status-hint" class="playground-only">Share copies a link with the code in it</span>
+    </footer>
 
     <div id="loading-overlay">
       <div id="loading-content">
