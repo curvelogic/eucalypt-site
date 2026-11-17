@@ -1,5 +1,5 @@
 {
   "comment": "The eucalypt revision the playground's engine, grammar and highlighting stylesheet are built from. scripts/vendor-eucalypt.sh reads it; change commit to upgrade.",
   "repository": "curvelogic/eucalypt",
-  "commit": "e6b79930ef3532dedc09abbfcc9cdbdd484e314f"
+  "commit": "307f49f65646f4dae9c03e198a7ba2cf873813dc"
 }

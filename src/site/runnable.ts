@@ -49,11 +49,6 @@ const BROWSER_CANNOT_RUN: { page: string; contains: string; reason: string }[] =
     reason: "reads the PATH environment variable, which the browser does not have",
   },
   {
-    page: "docs/guide/state-monad.md",
-    contains: '{ import: "state.eu" }',
-    reason: "imports state.eu, a library the browser engine does not bundle",
-  },
-  {
     page: "docs/guide/advent-of-code.md",
     contains: "dijkstra(moves, goal?, start): {",
     reason: "Dijkstra over a 141 × 141 grid takes more steps than the browser engine's step limit allows",
