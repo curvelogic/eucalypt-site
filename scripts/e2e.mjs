@@ -112,6 +112,7 @@ try {
     await open(base);
     const text = await page.textContent("#engine-version");
     assert(text === `eucalypt ${engine.version} (${engine.commit.slice(0, 7)})`, `version shown as ${text}`);
+    assert(/runs in your browser/.test(await page.textContent("#engine-note")), "no note that the engine runs in the browser");
     const href = await page.getAttribute("#engine-version", "href");
     assert(href.endsWith(engine.commit), `version links to ${href}`);
   });
@@ -231,6 +232,16 @@ try {
     await p.goto(new URL("/play/", base).href);
     assert((await p.getAttribute("html", "data-theme")) === "dark", "auto does not follow a dark system");
     await fresh.close();
+  });
+
+  await check("/play does not scroll sideways at tablet and desktop widths", async () => {
+    for (const width of [768, 772, 901, 1024, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await open(base);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+      assert(over <= 0, `${over}px wider than the screen at ${width}`);
+    }
+    await page.setViewportSize({ width: 1280, height: 9000 });
   });
 
   await check("no page errors", async () => {
