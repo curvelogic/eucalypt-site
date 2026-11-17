@@ -109,6 +109,17 @@
 
 /* Without JavaScript, or before a choice, the light theme applies. */
 
+/* Code is shown as typed: no ligatures, so "//=>" is not drawn as "//⇒"
+   (which in eucalypt is a different operator). */
+code,
+pre,
+kbd,
+.cm-content,
+.expressive-code {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
 /* ── Starlight ─────────────────────────────────────────────────────────────── */
 
 :root,

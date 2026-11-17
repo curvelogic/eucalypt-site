@@ -275,6 +275,23 @@ body.play {
   font-family: var(--font-mono);
 }
 #engine-version:hover { text-decoration: underline; }
+/* The note gives way first: it shrinks to an ellipsis, and goes below
+   900px, so it never widens the page. */
+#toolbar-left {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+#engine-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  #engine-note { display: none; }
+}
 
 /* ── Repository file view ───────────────────────────────────────────────── */
 
