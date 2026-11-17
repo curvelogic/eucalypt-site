@@ -1,8 +1,9 @@
 /**
  * The eucalypt engine at build time: the same WASM build the playground
- * runs, evaluated in Node while the site is built. Every output shown on the
- * homepage comes from here, so a page cannot show output the engine does
- * not produce, and an example that stops running fails the build.
+ * runs, evaluated in Node while the site is built. The homepage's hero, tour
+ * and pillar outputs come from here, so they cannot show output the engine
+ * does not produce, and an example that stops running fails the build. (The
+ * command-line snippets in src/site/examples.ts carry what `eu` printed.)
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

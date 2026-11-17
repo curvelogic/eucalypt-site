@@ -75,7 +75,7 @@ greeting: "Hello, {user.name}! You are user #{user.id:%03d}."`,
     id: "infinite",
     label: "Infinite lists",
     file: "powers.eu",
-    source: `# An infinite list, evaluated only as far as it is needed
+    source: `\` "An infinite list, evaluated only as far as it is needed."
 powers: iterate(* 2, 1) take(8)`,
   },
 ];
