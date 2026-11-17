@@ -4,6 +4,7 @@
 //   - nothing else is under /docs/: no internal material (docs/superpowers/,
 //     docs/development/ and the like) and no page SUMMARY.md does not list;
 //   - no page links to internal material (docs/superpowers/), even on GitHub;
+//   - no page starts in the dark theme (light is the default without JS);
 //   - the homepage and /play are there.
 //
 //   npm run build   (runs this last)
@@ -35,8 +36,12 @@ for (const file of walk(dist)) {
   if (/(^|\/)(superpowers|development)(\/|$)/.test(rel)) failures.push(`internal material in the build: ${rel}`);
 }
 for (const file of walk(dist).filter((f) => f.endsWith(".html"))) {
-  if (/href="[^"]*\/docs\/superpowers\//.test(readFileSync(file, "utf8"))) {
+  const html = readFileSync(file, "utf8");
+  if (/href="[^"]*\/docs\/superpowers\//.test(html)) {
     failures.push(`link to internal material in ${relative(dist, file)}`);
+  }
+  if (/<html\b[^>]*data-theme="dark"/.test(html)) {
+    failures.push(`page starts in the dark theme, not the default light: ${relative(dist, file)}`);
   }
 }
 for (const page of ["index.html", "play/index.html"]) {
