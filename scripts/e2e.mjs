@@ -9,8 +9,9 @@
 // are read-only, link back to their source and pick out lines; share links
 // are compressed and still read the old form. The #gh= checks fetch from
 // raw.githubusercontent.com. Runnable blocks in the docs and the homepage
-// tour show their pre-rendered output, load no engine until Run, and then
-// re-run as the source is edited. The homepage hero goes live on idle and
+// tour show their pre-rendered output, load no engine until "Run live" is
+// turned on, then re-run as the source is edited, and stop when it is
+// turned off. The homepage hero goes live on idle and
 // re-evaluates its source as it is edited, and its code fits at every width.
 // At 390px the header's links collapse into a menu (a disclosure) on the
 // homepage and /play, and the docs' Starlight menu carries the same links.
@@ -259,6 +260,7 @@ try {
     await page.goto(new URL("/", base).href);
     // Live on idle, without taking focus.
     await page.waitForSelector("#ex-layers .cm-editor");
+    await page.waitForFunction(() => document.querySelector("#ex-layers [data-state]").textContent === "Live");
     const pre = await page.textContent("#ex-layers [data-out=yaml]");
     assert(pre.includes("db.staging"), "pre-rendered output gone before any edit");
     await page.click("#ex-layers .cm-content");
@@ -312,25 +314,28 @@ try {
     }
   });
 
-  await check("docs blocks show their output and load no engine until Run", async () => {
+  await check("docs blocks show their output and load no engine until Run live", async () => {
     const wasm = [];
     const onRequest = (r) => r.url().endsWith(".wasm") && wasm.push(r.url());
     page.on("request", onRequest);
     await page.goto(new URL("/docs/guide/string-interpolation/", base).href);
     const block = page.locator("[data-run]").first();
     assert((await block.locator("[data-run-out]").textContent()).includes("Hello"), "no pre-rendered output");
-    assert(await block.locator("[data-run-btn]").isVisible(), "no Run button");
+    const toggle = page.getByRole("button", { name: "Run live" }).first();
+    assert(await toggle.isVisible(), "no Run live toggle");
+    assert((await toggle.getAttribute("aria-pressed")) === "false", "Run live is not an unpressed toggle");
     assert((await block.locator("[data-run-link]").getAttribute("href")).startsWith("/play/#z="), "no playground link");
     await page.waitForTimeout(500);
     page.off("request", onRequest);
     assert(wasm.length === 0, `fetched ${wasm.join(", ")} before Run`);
   });
 
-  await check("Run makes a docs block editable and re-runs it on each edit", async () => {
+  await check("Run live makes a docs block editable and re-runs it on each edit", async () => {
     await page.goto(new URL("/docs/guide/string-interpolation/", base).href);
     const block = page.locator("[data-run]").first();
     const before = await block.locator("[data-run-link]").getAttribute("href");
     await block.locator("[data-run-btn]").click();
+    await page.waitForFunction(() => document.querySelector("[data-run] [data-run-btn]").getAttribute("aria-pressed") === "true");
     const editor = block.locator(".cm-content");
     await editor.waitFor();
     await editor.click();
@@ -341,6 +346,36 @@ try {
     await page.waitForFunction((h) => document.querySelector("[data-run] [data-run-link]").getAttribute("href") !== h, before);
     await page.keyboard.type("\nbroken: no-such-name");
     await page.waitForFunction(() => document.querySelector("[data-run] .gg-run-live.err")?.textContent.includes("no-such-name"));
+  });
+
+  await check("Run live turns off from the keyboard, keeping the last output, and on again", async () => {
+    await page.goto(new URL("/docs/guide/string-interpolation/", base).href);
+    const block = page.locator("[data-run]").first();
+    const toggle = block.getByRole("button", { name: "Run live" });
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.querySelector("[data-run] [data-run-btn]").getAttribute("aria-pressed") === "true");
+    await block.locator(".cm-content").click();
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.type("\nadded: 6 * 7");
+    await page.waitForFunction(() => document.querySelector("[data-run] .gg-run-live")?.textContent.includes("added: 42"));
+    // Off: the output stays, the source is read-only and nothing re-runs.
+    await toggle.focus();
+    await page.keyboard.press("Space");
+    assert((await toggle.getAttribute("aria-pressed")) === "false", "Space did not turn live mode off");
+    assert((await block.locator(".cm-content").getAttribute("contenteditable")) === "false", "source still editable when off");
+    assert((await block.locator(".gg-run-live").textContent()).includes("added: 42"), "last output lost when off");
+    await block.locator(".cm-content").click();
+    await page.keyboard.type("more: 1");
+    assert(!(await block.locator(".cm-content").textContent()).includes("more: 1"), "typed into the source when off");
+    // On again: editable, and it evaluates at once.
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    assert((await toggle.getAttribute("aria-pressed")) === "true", "Enter did not turn live mode on again");
+    await block.locator(".cm-content").click();
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.type("\nagain: 2 + 2");
+    await page.waitForFunction(() => document.querySelector("[data-run] .gg-run-live")?.textContent.includes("again: 4"));
   });
 
   await check("homepage tour cards run in place", async () => {
