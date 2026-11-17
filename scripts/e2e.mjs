@@ -234,6 +234,16 @@ try {
     await fresh.close();
   });
 
+  await check("/play does not scroll sideways at tablet and desktop widths", async () => {
+    for (const width of [768, 772, 901, 1024, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await open(base);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+      assert(over <= 0, `${over}px wider than the screen at ${width}`);
+    }
+    await page.setViewportSize({ width: 1280, height: 9000 });
+  });
+
   await check("no page errors", async () => {
     assert(pageErrors.length === 0, pageErrors.join("\n"));
   });
