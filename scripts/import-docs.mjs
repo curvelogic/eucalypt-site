@@ -18,7 +18,11 @@
 //     link becomes its text, and a page that still mentions internal
 //     material is reported as a warning;
 //   - turns mdBook fence flags into meta ("```eu,notest" becomes
-//     "```eu notest"), so code blocks keep their flags for runnable blocks.
+//     "```eu notest"), so code blocks keep their flags for runnable blocks;
+//     an eu fence that eucalypt's own doc tests (scripts/test-doc-examples.py)
+//     do not run is marked notest too: a ```eucalypt fence (shown as eu),
+//     one indented or in a blockquote, or one that test calls a fragment. So the runnable
+//     blocks on the site are exactly the examples eucalypt's CI tests.
 //
 // It writes, all git-ignored:
 //   src/content/docs/docs/     the pages, served under /docs/
@@ -136,6 +140,25 @@ function rewriteLinks(text, from) {
     .join("");
 }
 
+/** The lines of a fence's body, from its first line to its closing fence. */
+function fenceBody(lines, start, fence) {
+  const end = lines.findIndex((l, j) => j >= start && l.trim().startsWith(fence) && !l.trim().slice(fence.length).trim());
+  return lines.slice(start, end < 0 ? undefined : end).join("\n");
+}
+
+/**
+ * Whether eucalypt's doc tests skip a block as a fragment: no line (other
+ * than a comment) declares anything, or it opens with a shell prompt or
+ * pipe. The same heuristic as is_likely_fragment in
+ * scripts/test-doc-examples.py.
+ */
+function isFragment(code) {
+  const lines = code.trim().split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+  if (!lines.length) return true;
+  if (lines[0].startsWith("|") || lines[0].startsWith("$")) return true;
+  return !lines.some((l) => l.includes(":"));
+}
+
 function convert(markdown, from) {
   const lines = markdown.split("\n");
   const first = lines.findIndex((l) => l.trim() !== "");
@@ -143,8 +166,9 @@ function convert(markdown, from) {
   if (!title) throw new Error(`${from}: does not open with a "# Title" heading`);
   const body = lines.slice(first + 1);
   let fence = null;
-  const out = body.map((line) => {
-    const open = line.match(/^(\s*)(`{3,}|~{3,})\s*([^`\s]*)(.*)$/);
+  const out = body.map((line, i) => {
+    // A fence may sit in a list or a blockquote: its prefix is kept.
+    const open = line.match(/^((?:\s*>)*\s*)(`{3,}|~{3,})\s*([^`\s]*)(.*)$/);
     if (fence) {
       if (open && open[2][0] === fence[0] && open[2].length >= fence.length && !open[3] && !open[4].trim()) fence = null;
       return line;
@@ -153,6 +177,8 @@ function convert(markdown, from) {
       fence = open[2];
       const [lang, ...flags] = open[3].split(",");
       const name = lang === "eucalypt" ? "eu" : lang;
+      const tested = lang === "eu" && !open[1] && !open[4].trim() && !isFragment(fenceBody(body, i + 1, fence));
+      if (name === "eu" && !tested && !flags.includes("notest")) flags.push("notest");
       const meta = [...flags, open[4].trim()].filter(Boolean).join(" ");
       return `${open[1]}${open[2]}${name}${meta ? " " + meta : ""}`;
     }
@@ -163,6 +189,11 @@ function convert(markdown, from) {
 
 const contentDir = join(root, "src/content/docs/docs");
 rmSync(contentDir, { recursive: true, force: true });
+// Astro keeps each page's rendered HTML between builds, and renders it again
+// only when the page changes. Rendering runs every runnable fence through
+// the engine (src/site/runnable.ts), so drop that cache: each build then
+// tests every fence against the engine it ships.
+rmSync(join(root, "node_modules/.astro/data-store.json"), { force: true });
 for (const { page, path, isRoot } of pages) {
   const { title, body } = convert(readFileSync(join(docs, page), "utf8"), page);
   const mentions = body.match(/docs\/superpowers\/|\]\((?:\.\.\/)*superpowers\//g);

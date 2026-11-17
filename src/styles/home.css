@@ -404,8 +404,21 @@
   overflow: hidden;
   background: var(--gg-code-bg);
 }
-.tcard .duo > .gg-snip + .gg-snip {
+.tcard .duo > .gg-run-out {
   border-top: 1px dashed var(--gg-code-line);
+}
+.tcard .gg-run-oh {
+  display: none;
+}
+.tcard .gg-run-live {
+  padding: 10px 14px;
+  font-size: 12.5px;
+}
+.tfoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 .tcard .astro-code {
   font-size: 12.5px;

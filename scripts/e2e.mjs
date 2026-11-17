@@ -8,7 +8,9 @@
 // (vendor/fixtures, from scripts/vendor-eucalypt.sh --fixtures); #gh= views
 // are read-only, link back to their source and pick out lines; share links
 // are compressed and still read the old form. The #gh= checks fetch from
-// raw.githubusercontent.com.
+// raw.githubusercontent.com. Runnable blocks in the docs and the homepage
+// tour show their pre-rendered output, load no engine until Run, and then
+// re-run as the source is edited.
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -216,6 +218,45 @@ try {
     await page.click("#ex-generate .ed-foot a");
     await ready();
     await page.waitForFunction(() => document.querySelector("#output").textContent.includes("web-2"));
+  });
+
+  await check("docs blocks show their output and load no engine until Run", async () => {
+    const wasm = [];
+    const onRequest = (r) => r.url().endsWith(".wasm") && wasm.push(r.url());
+    page.on("request", onRequest);
+    await page.goto(new URL("/docs/guide/string-interpolation/", base).href);
+    const block = page.locator("[data-run]").first();
+    assert((await block.locator("[data-run-out]").textContent()).includes("Hello"), "no pre-rendered output");
+    assert(await block.locator("[data-run-btn]").isVisible(), "no Run button");
+    assert((await block.locator("[data-run-link]").getAttribute("href")).startsWith("/play/#z="), "no playground link");
+    await page.waitForTimeout(500);
+    page.off("request", onRequest);
+    assert(wasm.length === 0, `fetched ${wasm.join(", ")} before Run`);
+  });
+
+  await check("Run makes a docs block editable and re-runs it on each edit", async () => {
+    await page.goto(new URL("/docs/guide/string-interpolation/", base).href);
+    const block = page.locator("[data-run]").first();
+    const before = await block.locator("[data-run-link]").getAttribute("href");
+    await block.locator("[data-run-btn]").click();
+    const editor = block.locator(".cm-content");
+    await editor.waitFor();
+    await editor.click();
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.type("\nadded: 6 * 7");
+    await page.waitForFunction(() => document.querySelector("[data-run] .gg-run-live")?.textContent.includes("added: 42"));
+    // The link is re-encoded just after the output is shown.
+    await page.waitForFunction((h) => document.querySelector("[data-run] [data-run-link]").getAttribute("href") !== h, before);
+    await page.keyboard.type("\nbroken: no-such-name");
+    await page.waitForFunction(() => document.querySelector("[data-run] .gg-run-live.err")?.textContent.includes("no-such-name"));
+  });
+
+  await check("homepage tour cards run in place", async () => {
+    await page.goto(new URL("/#tour", base).href);
+    const card = page.locator(".tcard[data-run]").first();
+    await card.locator("[data-run-btn]").click();
+    await card.locator(".cm-content").waitFor();
+    await card.locator(".gg-run-live").waitFor();
   });
 
   await check("theme is light by default, and a choice carries to the docs", async () => {

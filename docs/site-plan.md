@@ -103,13 +103,22 @@ They are used in three places:
 3. **Runnable docs blocks**: each ` ```eu ` fence (not `notest`) gets its
    output pre-rendered at build time by the same engine, a Run button that
    mounts the editor in place, and "Open in the playground". A fence whose
-   output the engine cannot produce fails the build, which makes the docs
-   their own test.
+   output the engine cannot produce fails the build, naming the page and
+   the fence, which makes the docs their own test. The runnable fences are
+   exactly those eucalypt's own doc tests run (`scripts/test-doc-examples.py`):
+   the import marks every other `eu` fence `notest` (` ```eucalypt `,
+   indented or quoted fences, and fragments). The few that `eu` runs but
+   the browser engine cannot (they read the environment or import a
+   bundled library such as `state.eu`) are listed, with the reason, in
+   `src/site/runnable.ts`, and show as plain code; the build fails if one
+   of them starts to run. It is a Sätteri mdast plugin (Astro's Markdown
+   processor), and `src/site/run-blocks.ts` is its page script. The
+   homepage tour's cards are runnable blocks too.
 
-The component to extract for 2 and 3 is one function,
-`mountLiveEditor(container, { source, format, onOutput })`, over
-`createEditor` and `evaluator`, loaded with a dynamic `import()` so pages
-that never run code never fetch the engine (several megabytes of WASM).
+The component for 2 and 3 is one function, `mountLiveEditor(container, {
+source, format, onOutput })` in `src/live.ts`, over `createEditor` and
+`evaluator`, loaded with a dynamic `import()` so pages that never run code
+never fetch the engine (several megabytes of WASM).
 
 ## Redirects from the old docs
 

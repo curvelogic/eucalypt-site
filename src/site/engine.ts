@@ -7,6 +7,7 @@
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { EvalResult } from "../evaluator";
 import { encodeState } from "../share";
 
@@ -14,9 +15,17 @@ type Engine = typeof import("../../vendor/engine/eucalypt.js");
 
 let engine: Promise<Engine> | null = null;
 
+/**
+ * Node's own import(), out of Vite's reach. The docs plugin
+ * (src/site/runnable.ts) is loaded with astro.config.mjs through a Vite
+ * module runner that is closed before the pages render, so an import() it
+ * rewrote would fail.
+ */
+const nativeImport = new Function("url", "return import(url)") as (url: string) => Promise<Engine>;
+
 function load(): Promise<Engine> {
   engine ??= (async () => {
-    const mod = await import("../../vendor/engine/eucalypt.js");
+    const mod = await nativeImport(pathToFileURL(join(process.cwd(), "vendor/engine/eucalypt.js")).href);
     await mod.default({ module_or_path: readFileSync(join(process.cwd(), "vendor/engine/eucalypt_bg.wasm")) });
     return mod;
   })();

@@ -6,6 +6,7 @@ import Mark from "../components/Mark.astro";
 import { CLI, HERO, LAZY, TOUR } from "../site/examples";
 import { output, playLink } from "../site/engine";
 import "../styles/home.css";
+import "../styles/run.css";
 
 const tour = await Promise.all(
   TOUR.map(async (t) => ({ ...t, output: await output(t.title, t.source, "yaml"), link: await playLink(t.source) })),
@@ -121,18 +122,25 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
         <div class="tour">
           {
             tour.map((t) => (
-              <div class="tcard">
+              <div class="tcard" data-run data-source={t.source} data-format="yaml">
                 <h3>
                   {t.title}
                   <small>{t.key}</small>
                 </h3>
                 <div class="duo">
-                  <Snippet code={t.source} plain />
-                  <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
+                  <div class="gg-run-src" data-run-src>
+                    <Snippet code={t.source} plain />
+                  </div>
+                  <div class="gg-run-out" data-run-out>
+                    <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
+                  </div>
                 </div>
-                <a class="more" href={t.link}>
-                  Open in the playground →
-                </a>
+                <div class="tfoot">
+                  <a class="more" href={t.link} data-run-link>
+                    Open in the playground →
+                  </a>
+                  <button type="button" class="gg-run-btn" data-run-btn hidden>▶ Run</button>
+                </div>
               </div>
             ))
           }
@@ -222,3 +230,8 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
     </div>
   </footer>
 </Site>
+
+<script>
+  // The tour's Run buttons; the editor and engine load on the first press.
+  import "../site/run-blocks";
+</script>
