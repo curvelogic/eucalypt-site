@@ -81,3 +81,17 @@ kbd {
     padding-inline: 1rem;
   }
 }
+
+/* Header tools that move into the menu on a phone (SiteHeader.astro). */
+.gg-wide {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.gg-menu-theme {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font: 600 0.9rem var(--gg-body);
+  color: var(--gg-muted);
+}

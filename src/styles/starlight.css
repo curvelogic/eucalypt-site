@@ -47,3 +47,30 @@ header.header {
   --sl-color-asides-border: var(--gg-err);
   background-color: var(--gg-err-wash);
 }
+
+/*
+ * Starlight's mobile menu button, drawn as the homepage's and /play's
+ * (SiteHeader.astro): a bordered icon button, leaf-washed while open.
+ */
+.sl-menu-button {
+  width: 2.4rem;
+  height: 2.4rem;
+  top: calc((var(--sl-nav-height) - 2.4rem) / 2);
+  border: 1px solid var(--gg-line);
+  border-radius: 8px;
+  background-color: var(--gg-surface);
+  color: var(--gg-ink);
+  box-shadow: none;
+}
+:root[data-theme] .sl-menu-button {
+  background-color: var(--gg-surface);
+  color: var(--gg-ink);
+}
+:root[data-theme] .sl-menu-button:has(~ :popover-open) {
+  background-color: var(--gg-leaf-wash);
+  border-color: var(--gg-leaf);
+}
+.sl-menu-button:focus-visible {
+  outline: 2px solid var(--gg-leaf);
+  outline-offset: 2px;
+}

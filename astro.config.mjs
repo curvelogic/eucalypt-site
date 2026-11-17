@@ -53,6 +53,7 @@ export default defineConfig({
         MarkdownContent: "./src/components/starlight/MarkdownContent.astro",
         ThemeProvider: "./src/components/starlight/ThemeProvider.astro",
         ThemeSelect: "./src/components/ThemeSelect.astro",
+        MobileMenuFooter: "./src/components/starlight/MobileMenuFooter.astro",
       },
       expressiveCode: {
         shiki: { langs: [generated("eucalypt.tmLanguage.json")] },
