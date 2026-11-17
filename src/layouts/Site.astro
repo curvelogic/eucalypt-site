@@ -7,7 +7,7 @@ import "../styles/ghost-gum.css";
 import "../styles/site.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import ThemeScript from "../components/ThemeScript.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
+import ThemeSelect from "../components/ThemeSelect.astro";
 import Grove from "../components/Grove.astro";
 
 interface Props {
@@ -48,7 +48,7 @@ const {
             ></path></svg
           >
         </a>
-        <ThemeToggle />
+        <ThemeSelect />
       </SiteHeader>
     </header>
     <slot />

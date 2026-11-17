@@ -1,18 +1,20 @@
 ---
 /**
- * Set data-theme before first paint, from the same localStorage key as
- * Starlight ("starlight-theme": "light", "dark" or "" for the system), so
- * the homepage, the docs and /play share one choice.
+ * Set data-theme before first paint. Light unless the reader chose
+ * otherwise: localStorage "eucalypt-theme" holds "light", "dark" or "auto"
+ * (follow the system), set by ThemeSelect.astro. Used on every page, and in
+ * place of Starlight's ThemeProvider, so the site has one default (light)
+ * and one remembered choice.
  */
 ---
 
 <script is:inline>
   (() => {
-    let stored = "";
+    let choice = null;
     try {
-      stored = localStorage.getItem("starlight-theme") ?? "";
+      choice = localStorage.getItem("eucalypt-theme");
     } catch {}
-    const system = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    document.documentElement.dataset.theme = stored === "light" || stored === "dark" ? stored : system;
+    const system = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = choice === "dark" ? "dark" : choice === "auto" ? system : "light";
   })();
 </script>

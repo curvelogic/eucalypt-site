@@ -41,7 +41,7 @@ const browser = await chromium.launch();
 try {
   for (const theme of ["light", "dark"]) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: scale });
-    await context.addInitScript((t) => localStorage.setItem("starlight-theme", t), theme);
+    await context.addInitScript((t) => localStorage.setItem("eucalypt-theme", t), theme);
     const page = await context.newPage();
     for (const [name, path] of pages) {
       await page.goto(`http://localhost:${port}${path}`);
