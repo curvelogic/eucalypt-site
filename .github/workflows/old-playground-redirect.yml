@@ -1,0 +1,48 @@
+# Replaces the old playground at https://curvelogic.github.io/eucalypt-playground/
+# with a page that forwards to https://eucalypt.curvelogic.info/play/, keeping
+# the URL fragment so old share links (#z=, #gh= and the older base64 form)
+# open the same program. Run once by hand; nothing else deploys to Pages now.
+name: Old playground redirect
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Write the forwarding page
+        run: node scripts/old-site-redirects.mjs play old-playground
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: old-playground
+
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
