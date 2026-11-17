@@ -1,0 +1,19 @@
+// The site on Cloudflare: a Worker with static assets and no script of its
+// own, serving the Astro build in dist/ at eucalypt.curvelogic.info.
+// Deployed by .github/workflows/deploy.yml with `wrangler deploy`; this file
+// is the source of truth for the Worker's configuration.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "eucalypt-site",
+  "compatibility_date": "2026-10-29",
+  "assets": {
+    "directory": "./dist",
+    // Astro writes page/index.html with trailing-slash URLs.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // A Custom Domain: Cloudflare creates the DNS record and the certificate.
+  "routes": [{ "pattern": "eucalypt.curvelogic.info", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false
+}

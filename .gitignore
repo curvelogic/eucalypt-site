@@ -17,3 +17,6 @@ e2e-screenshots/
 .astro/
 src/content/docs/docs/
 src/generated/
+
+# wrangler dev state
+.wrangler/

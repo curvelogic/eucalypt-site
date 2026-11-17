@@ -122,24 +122,29 @@ time, so a release does not overwrite them.
 
 ## Deployment
 
-GitHub Pages from this repository, with the custom domain
-`eucalypt.curvelogic.info`. The repository is private but already served by
-Pages on the account's plan, so nothing changes in kind. The site is built
-for the root of that domain, so automatic deploys are paused until the
-deployment change (owner-merged) sets the domain and turns them back on. The
-owner adds one DNS record: `eucalypt.curvelogic.info CNAME curvelogic.github.io`.
+Cloudflare, where the `curvelogic.info` zone and the owner's other apps
+already are: a Worker with static assets and no script of its own, on the
+Custom Domain `eucalypt.curvelogic.info`. `wrangler.jsonc` is the source of
+truth; `.github/workflows/deploy.yml` builds without secrets and deploys with
+`wrangler deploy` from a separate job that alone reads
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. A Custom Domain creates
+its own DNS record and certificate, so no record is added by hand (an
+existing CNAME on the hostname would block it). The old playground at
+`curvelogic.github.io/eucalypt-playground/` keeps serving its last Pages
+deployment until it is retired (lane 5).
 
 ## Build lanes that follow
 
-1. **Deployment** (owner merges): custom domain, deploy on push, HTTPS.
+1. **Deployment** (owner merges): the Worker, its Custom Domain, deploy on push.
 2. **Hero editor, live**: `mountLiveEditor` on the homepage, as above.
 3. **Runnable docs blocks**: an Expressive Code plugin or rehype step for
    `eu` fences, with build-time output, and Run and "Open in the
    playground".
 4. **`/play` in Ghost Gum**: the design's toolbar (example picker, format
    tabs, Share in the header), the problems panel, and the mobile layout.
-5. **Redirects from the old docs**, and retiring the mdBook workflow in
-   eucalypt.
+5. **Redirects from the old URLs**: the old docs, retiring the mdBook
+   workflow in eucalypt, and the old playground's Pages site, replaced by a
+   page that sends `#z=`, `#gh=` and older links on to `/play/`.
 6. **Pin bumps**: a scheduled job that opens a PR moving `eucalypt-pin.json`
    to eucalypt's latest release.
 7. **Mobile header**: the design's menu under 760px on the homepage and
