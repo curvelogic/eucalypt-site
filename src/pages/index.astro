@@ -4,12 +4,17 @@ import HeroEditor from "../components/HeroEditor.astro";
 import Snippet from "../components/Snippet.astro";
 import Mark from "../components/Mark.astro";
 import { CLI, HERO, LAZY, TOUR } from "../site/examples";
-import { output, playLink } from "../site/engine";
+import { diagnostic, output, playLink } from "../site/engine";
 import "../styles/home.css";
 import "../styles/run.css";
 
 const tour = await Promise.all(
-  TOUR.map(async (t) => ({ ...t, output: await output(t.title, t.source, "yaml"), link: await playLink(t.source) })),
+  TOUR.map(async (t) => ({
+    ...t,
+    output: t.fails ? null : await output(t.title, t.source, "yaml"),
+    error: t.fails ? await diagnostic(t.title, t.fails, t.source) : null,
+    link: await playLink(t.source),
+  })),
 );
 const lazyToml = await output("lazy pillar", LAZY, "toml");
 const layersToml = (await output("data-native pillar", HERO[0].source, "toml"))
@@ -54,25 +59,37 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
         </div>
         <div class="pairs">
           <div class="pair">
-            <h3>Embedded in YAML</h3>
-            <p>Tag a value with <code>!eu</code> and keep the rest of the file as it is.</p>
-            <Snippet title="config.yaml" code={CLI.embedSource} lang="yaml" />
-            <span class="arrow">eu config.yaml</span>
-            <Snippet title="output" code={CLI.embedOutput} lang="yaml" output />
+            <div class="pair-h">
+              <h3>Embedded in YAML</h3>
+              <p>Tag a value with <code>!eu</code> and keep the rest of the file as it is.</p>
+            </div>
+            <div class="pair-in"><Snippet title="config.yaml" code={CLI.embedSource} lang="yaml" /></div>
+            <div class="pair-out">
+              <span class="arrow">eu config.yaml</span>
+              <Snippet title="output" code={CLI.embedOutput} lang="yaml" output />
+            </div>
           </div>
           <div class="pair">
-            <h3>CSV in, totals out</h3>
-            <p>Import a file as a named input and process it like any other data.</p>
-            <Snippet title="staff.csv" code={CLI.csv} lang="csv" />
-            <Snippet title="hours.eu" code={CLI.hoursSource} />
-            <span class="arrow">eu hours.eu</span>
-            <Snippet title="output" code={CLI.hoursOutput} lang="yaml" output />
+            <div class="pair-h">
+              <h3>CSV in, totals out</h3>
+              <p>Import a file as a named input and process it like any other data.</p>
+            </div>
+            <div class="pair-in">
+              <Snippet title="staff.csv" code={CLI.csv} lang="csv" />
+              <Snippet title="hours.eu" code={CLI.hoursSource} />
+            </div>
+            <div class="pair-out">
+              <span class="arrow">eu hours.eu</span>
+              <Snippet title="output" code={CLI.hoursOutput} lang="yaml" output />
+            </div>
           </div>
           <div class="pair">
-            <h3>A one-liner in the shell</h3>
-            <p>Query structured data without writing a file. Here, JSON out with <code>-j</code>.</p>
-            <Snippet title="terminal" code={CLI.shell} lang="shellsession" />
-            <Snippet title="stdout" code={CLI.shellOutput} lang="json" output />
+            <div class="pair-h">
+              <h3>A one-liner in the shell</h3>
+              <p>Query structured data without writing a file. Here, JSON out with <code>-j</code>.</p>
+            </div>
+            <div class="pair-in"><Snippet title="terminal" code={CLI.shell} lang="shellsession" /></div>
+            <div class="pair-out"><Snippet title="stdout" code={CLI.shellOutput} lang="json" output /></div>
           </div>
         </div>
       </div>
@@ -82,31 +99,43 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
       <div class="w">
         <div class="s-h">
           <p class="kick">Why eucalypt</p>
-          <h2>Three things it is, and what each one means.</h2>
+          <h2>Lazy, functional, and typed when you want it.</h2>
         </div>
         <div class="pillars">
           <div class="pillar">
-            <h3>Data-native</h3>
-            <p>
-              Blocks are mappings and lists are lists. You build the data structure itself, so there is no indentation to
-              template and no quoting to escape.
-            </p>
-            <Snippet title="output as YAML, JSON or TOML" code={layersToml} lang="toml" output />
-            <a class="more" href="/docs/welcome/what-is-eucalypt/">What eucalypt is for →</a>
+            <div class="pillar-text">
+              <h3>Data-native</h3>
+              <p>
+                Blocks are mappings and lists are lists. You build the data structure itself, so there is no indentation to
+                template and no quoting to escape.
+              </p>
+              <a class="more" href="/docs/welcome/what-is-eucalypt/">What eucalypt is for →</a>
+            </div>
+            <div class="pillar-code">
+              <Snippet title="output as YAML, JSON or TOML" code={layersToml} lang="toml" output />
+            </div>
           </div>
           <div class="pillar">
-            <h3>Lazy and functional</h3>
-            <p>Nothing is evaluated until the output needs it, so infinite lists and unused branches cost nothing.</p>
-            <Snippet title="powers.eu" code={LAZY} />
-            <Snippet title="eu -x toml powers.eu" code={lazyToml} lang="toml" output />
-            <a class="more" href="/docs/understanding/lazy-evaluation/">Lazy evaluation →</a>
+            <div class="pillar-text">
+              <h3>Lazy and functional</h3>
+              <p>Nothing is evaluated until the output needs it, so infinite lists and unused branches cost nothing.</p>
+              <a class="more" href="/docs/understanding/lazy-evaluation/">Lazy evaluation →</a>
+            </div>
+            <div class="pillar-code">
+              <Snippet title="powers.eu" code={LAZY} />
+              <Snippet title="eu -x toml powers.eu" code={lazyToml} lang="toml" output />
+            </div>
           </div>
           <div class="pillar">
-            <h3>Gradually typed</h3>
-            <p>Annotate where it helps. The checker warns without stopping evaluation, unless you pass <code>--strict</code>.</p>
-            <Snippet title="types.eu" code={CLI.typesSource} />
-            <Snippet title="stderr" code={CLI.typesWarning} lang="text" output class="warn" />
-            <a class="more" href="/docs/guide/type-checking/">Type checking →</a>
+            <div class="pillar-text">
+              <h3>Gradually typed</h3>
+              <p>Annotate where it helps. The checker warns without stopping evaluation, unless you pass <code>--strict</code>.</p>
+              <a class="more" href="/docs/guide/type-checking/">Type checking →</a>
+            </div>
+            <div class="pillar-code">
+              <Snippet title="types.eu" code={CLI.typesSource} />
+              <Snippet title="stderr" code={CLI.typesWarning} lang="text" output class="warn" />
+            </div>
           </div>
         </div>
       </div>
@@ -116,31 +145,45 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
       <div class="w">
         <div class="s-h">
           <p class="kick">A short tour</p>
-          <h2>Six ideas, each a line or two long.</h2>
+          <h2>Key ideas in short snippets.</h2>
           <p>Every snippet runs. Open one in the playground to change it.</p>
         </div>
         <div class="tour">
           {
             tour.map((t) => (
-              <div class="tcard" data-run data-source={t.source} data-format="yaml">
+              <div class="tcard" data-run={t.output ? "" : undefined} data-source={t.source} data-format="yaml">
                 <h3>
                   {t.title}
                   <small>{t.key}</small>
                 </h3>
-                <div class="duo">
-                  <div class="gg-run-src" data-run-src>
-                    <Snippet code={t.source} plain />
-                  </div>
-                  <div class="gg-run-out" data-run-out>
-                    <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
-                  </div>
-                </div>
-                <div class="tfoot">
-                  <a class="more" href={t.link} data-run-link>
-                    Open in the playground →
-                  </a>
-                  <button type="button" class="gg-run-btn" data-run-btn hidden>▶ Run</button>
-                </div>
+                {t.output ? (
+                  <>
+                    <div class="duo">
+                      <div class="gg-run-src" data-run-src>
+                        <Snippet code={t.source} plain />
+                      </div>
+                      <div class="gg-run-out" data-run-out>
+                        <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
+                      </div>
+                    </div>
+                    <div class="tfoot">
+                      <a class="more" href={t.link} data-run-link>
+                        Open in the playground →
+                      </a>
+                      <button type="button" class="gg-run-btn" data-run-btn hidden>▶ Run</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div class="duo">
+                      <Snippet code={t.source} plain />
+                      <pre class="tcard-err">{t.error}</pre>
+                    </div>
+                    <a class="more" href={t.link}>
+                      Open in the playground →
+                    </a>
+                  </>
+                )}
               </div>
             ))
           }

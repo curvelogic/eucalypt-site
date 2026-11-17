@@ -53,6 +53,36 @@ const BROWSER_CANNOT_RUN: { page: string; contains: string; reason: string }[] =
     contains: '{ import: "state.eu" }',
     reason: "imports state.eu, a library the browser engine does not bundle",
   },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "dijkstra(moves, goal?, start): {",
+    reason: "Dijkstra over a 141 × 141 grid takes more steps than the browser engine's step limit allows",
+  },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "the stones that stone `x` becomes in one step",
+    reason: "75 blinks take more steps than the browser engine's step limit allows",
+  },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "run(100000, 1)",
+    reason: "100,000 iterations take more steps than the browser engine's step limit allows",
+  },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "times(+ 3, 100000, 0)",
+    reason: "100,000 iterations take more steps than the browser engine's step limit allows",
+  },
+  {
+    page: "docs/guide/advent-of-code.md",
+    contains: "iterate(+ 3, 0) nth(100000)",
+    reason: "100,000 iterations take more steps than the browser engine's step limit allows",
+  },
+  {
+    page: "docs/guide/dicts.md",
+    contains: '` "the side of the grid"',
+    reason: "a 141 × 141 grid search takes more steps than the browser engine's step limit allows",
+  },
 ];
 
 /** The page in eucalypt a file was imported from, e.g. docs/guide/anaphora.md. */

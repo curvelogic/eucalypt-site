@@ -317,11 +317,12 @@
   background: color-mix(in srgb, var(--gg-surface) 35%, transparent);
   border-block: 1px solid var(--gg-line);
 }
+/* Headings take the content's width; only the paragraph under them keeps
+   a reading measure. */
 .s-h {
   display: grid;
   gap: 12px;
   margin-bottom: 36px;
-  max-width: 760px;
 }
 .s-h h2 {
   font-size: 44px;
@@ -331,6 +332,7 @@
 .s-h p {
   color: var(--gg-muted);
   font-size: 18px;
+  max-width: 46em;
 }
 .more {
   color: var(--gg-link);
@@ -384,11 +386,34 @@
   background: var(--gg-muted);
 }
 
-.pairs,
+/* One pillar a row: what it means on the left, its code at full width on
+   the right, so no line is cut off. */
 .pillars {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
+}
+/* One example a row, inputs beside output, each at the content's width so
+   no line is cut off. */
+.pairs {
+  display: grid;
+  gap: 44px;
+}
+.pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 12px 22px;
+  align-items: start;
+}
+.pair-h {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+}
+.pair-in,
+.pair-out {
+  display: grid;
+  gap: 10px;
+  align-content: start;
 }
 /* Two cards a row, each with its source above its output: a line of
    eucalypt and its result each get the card's full width. */
@@ -397,7 +422,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 26px 28px;
 }
-.pair,
 .tcard {
   display: grid;
   gap: 10px;
@@ -428,6 +452,17 @@
 }
 .pillar:nth-child(3) {
   border-top-color: var(--gg-haze);
+}
+.pillar {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 14px 32px;
+  align-items: start;
+}
+.pillar-text,
+.pillar-code {
+  display: grid;
+  gap: 12px;
+  align-content: start;
 }
 .pillar h3 {
   font-size: 26px;
@@ -470,6 +505,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+.tcard-err {
+  margin: 0;
+  padding: 10px 14px;
+  font: 12.5px/1.6 var(--gg-mono);
+  color: var(--gg-err);
+  background: var(--gg-out-bg);
+  border-top: 1px dashed var(--gg-code-line);
+  white-space: pre-wrap;
 }
 .tcard .astro-code {
   font-size: 12.5px;
@@ -623,8 +667,8 @@
   }
 }
 @media (max-width: 1100px) {
-  .pairs,
-  .pillars,
+  .pair,
+  .pillar,
   .tour,
   .gs {
     grid-template-columns: minmax(0, 1fr);
@@ -666,4 +710,11 @@
     margin-left: 0;
     gap: 28px;
   }
+}
+
+/* After the rules above: their `font` shorthands reset ligatures, and code
+   is shown as typed ("//=>", not "//⇒"). */
+.home :is(pre, code, kbd, small, .pane-h, .ed-foot) {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
