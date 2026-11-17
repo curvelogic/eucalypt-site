@@ -55,9 +55,9 @@ shared with `scripts/vendor-eucalypt.sh`).
   page is there, and nothing else is under `/docs/`.
 - Internal material is never linked either: a link into `docs/superpowers/`
   becomes its text, `check-site.mjs` fails on any link to it, and the import
-  warns about a published page that still mentions it. (eucalypt#1262
-  rewords the pages that do; once the pin passes it, the warning can become
-  an error.)
+  fails on a published page that still mentions it, or that carries one of
+  eucalypt's internal issue IDs (`eu-` and a short random suffix, such as
+  `eu-r9oy`; the few real words of that shape are listed in the script).
 - Each page's leading `# Title` becomes front matter, with an edit link to
   the file in eucalypt. Links between pages become site URLs; links to
   anything unpublished go to the file on GitHub at the pinned commit.
@@ -72,7 +72,31 @@ commit in `eucalypt-pin.json` is bumped here. That one change moves the docs,
 the engine, the grammar and the highlighting together, and CI builds and
 checks them together, so the docs never describe a different eucalypt from
 the one the playground runs. A pin bump is a small PR that can be automated
-later (see the lanes).
+later (see below).
+
+### Proposal: automated pin bumps
+
+Not built yet; this is lane 6 below, proposed for the owner to decide on.
+
+- **What:** a scheduled GitHub Actions workflow (weekly, plus
+  `workflow_dispatch`) that reads eucalypt's `master` head, or its latest
+  release if the site should only follow releases, and, when it differs from
+  `eucalypt-pin.json`, opens or updates one PR on a fixed branch
+  (`bot/pin-bump`) changing only `commit`.
+- **Why a PR, not a push:** the PR runs the ordinary CI (`npm test`,
+  `npm run build` with `check-site.mjs`), so a docs page that mentions
+  internal material or an issue ID, a broken link, or an engine change that
+  breaks the playground stops at review instead of reaching the site. The
+  owner merges it as usual.
+- **Body:** the old and new commit, with a compare link and the eucalypt
+  PRs merged between them, so the change is reviewable at a glance.
+- **Credentials:** the default `GITHUB_TOKEN` with `contents: write` and
+  `pull-requests: write`; eucalypt is public, so reading it needs nothing.
+  A PR opened with `GITHUB_TOKEN` does not trigger CI on its own, so the
+  workflow either dispatches `ci.yml` for the branch or uses a fine-grained
+  token or GitHub App limited to this repository; the owner chooses.
+- **Choice to make:** follow `master` (docs fixes reach the site within a
+  week) or follow releases (the playground always runs a released `eu`).
 
 ## The shared editor
 
