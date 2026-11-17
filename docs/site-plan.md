@@ -85,8 +85,10 @@ They are used in three places:
    `index.html` into an Astro page, unchanged; its tests run against
    `/play/`.
 2. **The homepage hero** is pre-rendered: `src/site/engine.ts` runs the same
-   WASM engine in Node at build time, so every output on the homepage is what
-   the engine produces, an example that stops working fails the build, and
+   WASM engine in Node at build time, so every output in the hero, the tour
+   and the pillars is what the engine produces (the four command-line
+   snippets carry what `eu` printed), an example that stops working fails
+   the build, and
    the output is there on first paint without JavaScript. "Open in the
    playground" links are built with `encodeState`. The live stage mounts
    `createEditor` over the pre-rendered source on idle or first focus,
