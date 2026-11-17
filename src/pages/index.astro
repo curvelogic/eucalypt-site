@@ -53,25 +53,37 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
         </div>
         <div class="pairs">
           <div class="pair">
-            <h3>Embedded in YAML</h3>
-            <p>Tag a value with <code>!eu</code> and keep the rest of the file as it is.</p>
-            <Snippet title="config.yaml" code={CLI.embedSource} lang="yaml" />
-            <span class="arrow">eu config.yaml</span>
-            <Snippet title="output" code={CLI.embedOutput} lang="yaml" output />
+            <div class="pair-h">
+              <h3>Embedded in YAML</h3>
+              <p>Tag a value with <code>!eu</code> and keep the rest of the file as it is.</p>
+            </div>
+            <div class="pair-in"><Snippet title="config.yaml" code={CLI.embedSource} lang="yaml" /></div>
+            <div class="pair-out">
+              <span class="arrow">eu config.yaml</span>
+              <Snippet title="output" code={CLI.embedOutput} lang="yaml" output />
+            </div>
           </div>
           <div class="pair">
-            <h3>CSV in, totals out</h3>
-            <p>Import a file as a named input and process it like any other data.</p>
-            <Snippet title="staff.csv" code={CLI.csv} lang="csv" />
-            <Snippet title="hours.eu" code={CLI.hoursSource} />
-            <span class="arrow">eu hours.eu</span>
-            <Snippet title="output" code={CLI.hoursOutput} lang="yaml" output />
+            <div class="pair-h">
+              <h3>CSV in, totals out</h3>
+              <p>Import a file as a named input and process it like any other data.</p>
+            </div>
+            <div class="pair-in">
+              <Snippet title="staff.csv" code={CLI.csv} lang="csv" />
+              <Snippet title="hours.eu" code={CLI.hoursSource} />
+            </div>
+            <div class="pair-out">
+              <span class="arrow">eu hours.eu</span>
+              <Snippet title="output" code={CLI.hoursOutput} lang="yaml" output />
+            </div>
           </div>
           <div class="pair">
-            <h3>A one-liner in the shell</h3>
-            <p>Query structured data without writing a file. Here, JSON out with <code>-j</code>.</p>
-            <Snippet title="terminal" code={CLI.shell} lang="shellsession" />
-            <Snippet title="stdout" code={CLI.shellOutput} lang="json" output />
+            <div class="pair-h">
+              <h3>A one-liner in the shell</h3>
+              <p>Query structured data without writing a file. Here, JSON out with <code>-j</code>.</p>
+            </div>
+            <div class="pair-in"><Snippet title="terminal" code={CLI.shell} lang="shellsession" /></div>
+            <div class="pair-out"><Snippet title="stdout" code={CLI.shellOutput} lang="json" output /></div>
           </div>
         </div>
       </div>
@@ -81,7 +93,7 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
       <div class="w">
         <div class="s-h">
           <p class="kick">Why eucalypt</p>
-          <h2>Three things it is, and what each one means.</h2>
+          <h2>Lazy, functional, and typed when you want it.</h2>
         </div>
         <div class="pillars">
           <div class="pillar">
@@ -115,7 +127,7 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
       <div class="w">
         <div class="s-h">
           <p class="kick">A short tour</p>
-          <h2>Six ideas, each a line or two long.</h2>
+          <h2>Key ideas in short snippets.</h2>
           <p>Every snippet runs. Open one in the playground to change it.</p>
         </div>
         <div class="tour">
