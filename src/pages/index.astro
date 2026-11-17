@@ -170,7 +170,10 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
                       <a class="more" href={t.link} data-run-link>
                         Open in the playground →
                       </a>
-                      <button type="button" class="gg-run-btn" data-run-btn hidden>▶ Run</button>
+                      <button type="button" class="gg-run-btn" data-run-btn aria-pressed="false" hidden>
+                        <span class="sw" aria-hidden="true" />
+                        <span class="lbl">Run live</span>
+                      </button>
                     </div>
                   </>
                 ) : (

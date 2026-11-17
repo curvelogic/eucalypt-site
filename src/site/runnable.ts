@@ -113,8 +113,8 @@ const leaf = (hast: Element): Node => ({
 });
 
 /**
- * The header of a runnable block: its language, the link and the Run
- * button, which stays hidden until the page's script shows it.
+ * The header of a runnable block: its language, the link and the "Run
+ * live" toggle, which stays hidden until the page's script shows it.
  */
 const header = (link: string): Node =>
   leaf(
@@ -122,7 +122,10 @@ const header = (link: string): Node =>
       el("span", {}, [text("eu")]),
       el("span", { className: ["sp"] }),
       el("a", { href: link, dataRunLink: "" }, [text("Open in the playground ↗")]),
-      el("button", { type: "button", className: ["gg-run-btn"], dataRunBtn: "", hidden: true }, [text("▶ Run")]),
+      el("button", { type: "button", className: ["gg-run-btn"], dataRunBtn: "", ariaPressed: "false", hidden: true }, [
+        el("span", { className: ["sw"], ariaHidden: "true" }),
+        el("span", { className: ["lbl"] }, [text("Run live")]),
+      ]),
     ]),
   );
 

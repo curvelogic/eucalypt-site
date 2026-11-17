@@ -129,8 +129,11 @@ They are used in three places:
    (`src/diagnostic.ts`, shared with the build). Long lines wrap rather
    than scroll, and the hero stacks below 1280px.
 3. **Runnable docs blocks**: each ` ```eu ` fence (not `notest`) gets its
-   output pre-rendered at build time by the same engine, a Run button that
-   mounts the editor in place, and "Open in the playground". A fence whose
+   output pre-rendered at build time by the same engine, a "Run live"
+   toggle (`aria-pressed`) that mounts the editor in place and re-runs it
+   as it is edited until it is turned off (the last output stays), and
+   "Open in the playground". The hero marks its live state with the same
+   leaf "Live" mark. A fence whose
    output the engine cannot produce fails the build, naming the page and
    the fence, which makes the docs their own test. The runnable fences are
    exactly those eucalypt's own doc tests run (`scripts/test-doc-examples.py`):
