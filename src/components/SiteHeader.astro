@@ -1,0 +1,91 @@
+---
+/**
+ * The header shared by the homepage, the docs and /play: the wordmark and
+ * the same four links everywhere. Only the active link and the tools on the
+ * right (the slot) change between surfaces.
+ */
+import Mark from "./Mark.astro";
+
+interface Props {
+  active?: "docs" | "play" | "prelude" | "install" | "";
+}
+const { active = "" } = Astro.props;
+const links = [
+  { id: "docs", label: "Docs", href: "/docs/" },
+  { id: "play", label: "Playground", href: "/play/" },
+  { id: "prelude", label: "Prelude", href: "/docs/reference/prelude/" },
+  { id: "install", label: "Install", href: "/docs/welcome/quick-start/" },
+];
+---
+
+<div class="gg-header">
+  <a class="gg-wordmark" href="/" aria-label="eucalypt home">
+    <Mark size={30} />
+    <span>eucalypt</span>
+  </a>
+  <nav class="gg-nav" aria-label="Site">
+    {
+      links.map((l) => (
+        <a href={l.href} aria-current={l.id === active ? "page" : undefined}>
+          {l.label}
+        </a>
+      ))
+    }
+  </nav>
+  <div class="gg-tools"><slot /></div>
+</div>
+
+<style>
+  .gg-header {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    height: 100%;
+    min-width: 0;
+  }
+  .gg-wordmark {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--gg-ink);
+    text-decoration: none;
+    flex: none;
+  }
+  .gg-wordmark span {
+    font-family: var(--gg-display);
+    font-weight: 600;
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .gg-nav {
+    display: flex;
+    gap: 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .gg-nav a {
+    color: var(--gg-muted);
+    text-decoration: none;
+    padding-block: 0.4rem;
+  }
+  .gg-nav a:hover {
+    color: var(--gg-ink);
+  }
+  .gg-nav a[aria-current="page"] {
+    color: var(--gg-ink);
+    box-shadow: inset 0 -2px 0 var(--gg-leaf);
+  }
+  .gg-tools {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-width: 0;
+  }
+  @media (max-width: 50rem) {
+    .gg-nav {
+      display: none;
+    }
+  }
+</style>

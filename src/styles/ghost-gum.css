@@ -1,0 +1,203 @@
+/*
+ * Ghost Gum: the site's design tokens, shared by the homepage, the docs and
+ * /play. Dark values are not an inversion: the ground is a eucalypt
+ * green-black, the leaf lightens to a sage and the bark softens to salmon.
+ *
+ * The theme is chosen by data-theme on <html>, which Starlight sets from
+ * localStorage "starlight-theme"; the homepage and /play use the same key
+ * (src/components/ThemeScript.astro), so a choice carries across the site.
+ * Without JavaScript the system preference applies.
+ *
+ * The bottom half maps the tokens onto Starlight's custom properties, so
+ * the docs theme is overrides, not a fork.
+ */
+
+@import "@fontsource/familjen-grotesk/500.css";
+@import "@fontsource/familjen-grotesk/600.css";
+@import "@fontsource/familjen-grotesk/700.css";
+@import "@fontsource/atkinson-hyperlegible-next/400.css";
+@import "@fontsource/atkinson-hyperlegible-next/400-italic.css";
+@import "@fontsource/atkinson-hyperlegible-next/600.css";
+@import "@fontsource/atkinson-hyperlegible-next/700.css";
+@import "@fontsource/fragment-mono/400.css";
+
+:root {
+  --gg-display: "Familjen Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --gg-body: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+  --gg-mono: "Fragment Mono", ui-monospace, Menlo, Consolas, monospace;
+  --gg-header-height: 4.25rem;
+}
+
+/* Light */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --gg-bg: #f5f8f5;
+  --gg-surface: #ffffff;
+  --gg-ink: #17221f;
+  --gg-muted: #55665f;
+  --gg-line: #dbe3e0;
+  --gg-line-strong: #b9c7c2;
+  --gg-leaf: #33794c;
+  --gg-leaf-ink: #ffffff;
+  --gg-link: #276b44;
+  --gg-leaf-wash: #e3f1e6;
+  --gg-bark: #c4673f;
+  --gg-bark-ink: #b0582f;
+  --gg-bark-wash: #f6e4da;
+  --gg-haze: #7f9cad;
+  --gg-err: #b42318;
+  --gg-err-wash: #fdecea;
+  --gg-ok: #1f7a4d;
+  --gg-code-bg: #ffffff;
+  --gg-code-bar: #f1f5f3;
+  --gg-code-line: #dde5e2;
+  --gg-out-bg: #f3f6f5;
+  --gg-shadow: 0 1px 0 #00000008, 0 24px 48px -28px #1b3a3366;
+  /* the grove */
+  --gg-trunk: #e7eee9;
+  --gg-trunk-edge: #dbe4de;
+  --gg-patch: #eed8ca;
+  --gg-canopy: #d6e5da;
+  --gg-grove-strength: 0.5;
+}
+
+/* Dark */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --gg-bg: #111917;
+  --gg-surface: #18221f;
+  --gg-ink: #e4ece9;
+  --gg-muted: #9eafa9;
+  --gg-line: #283633;
+  --gg-line-strong: #3b4d48;
+  --gg-leaf: #8ccf9f;
+  --gg-leaf-ink: #0d1a17;
+  --gg-link: #9bd8ad;
+  --gg-leaf-wash: #1d3024;
+  --gg-bark: #ec9a76;
+  --gg-bark-ink: #ec9a76;
+  --gg-bark-wash: #2e231e;
+  --gg-haze: #8fb0c2;
+  --gg-err: #ff8f80;
+  --gg-err-wash: #3a1d1a;
+  --gg-ok: #7fd6a4;
+  --gg-code-bg: #141d1b;
+  --gg-code-bar: #0f1715;
+  --gg-code-line: #26332f;
+  --gg-out-bg: #18221f;
+  --gg-shadow: 0 24px 48px -28px #000000aa;
+  --gg-trunk: #1c2824;
+  --gg-trunk-edge: #22302b;
+  --gg-patch: #33281f;
+  --gg-canopy: #1a2a22;
+  --gg-grove-strength: 0.55;
+}
+
+/* No JavaScript: follow the system. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --gg-bg: #111917;
+    --gg-surface: #18221f;
+    --gg-ink: #e4ece9;
+    --gg-muted: #9eafa9;
+    --gg-line: #283633;
+    --gg-line-strong: #3b4d48;
+    --gg-leaf: #8ccf9f;
+    --gg-leaf-ink: #0d1a17;
+    --gg-link: #9bd8ad;
+    --gg-leaf-wash: #1d3024;
+    --gg-bark: #ec9a76;
+    --gg-bark-ink: #ec9a76;
+    --gg-bark-wash: #2e231e;
+    --gg-haze: #8fb0c2;
+    --gg-err: #ff8f80;
+    --gg-err-wash: #3a1d1a;
+    --gg-ok: #7fd6a4;
+    --gg-code-bg: #141d1b;
+    --gg-code-bar: #0f1715;
+    --gg-code-line: #26332f;
+    --gg-out-bg: #18221f;
+    --gg-shadow: 0 24px 48px -28px #000000aa;
+    --gg-trunk: #1c2824;
+    --gg-trunk-edge: #22302b;
+    --gg-patch: #33281f;
+    --gg-canopy: #1a2a22;
+    --gg-grove-strength: 0.55;
+  }
+}
+
+/* ── Starlight ─────────────────────────────────────────────────────────────── */
+
+:root,
+::backdrop {
+  --sl-font: var(--gg-body);
+  --sl-font-mono: var(--gg-mono);
+  --sl-nav-height: var(--gg-header-height);
+  --sl-color-bg: var(--gg-bg);
+  --sl-color-bg-nav: color-mix(in srgb, var(--gg-bg) 86%, transparent);
+  --sl-color-bg-sidebar: color-mix(in srgb, var(--gg-surface) 70%, transparent);
+  --sl-color-bg-inline-code: var(--gg-leaf-wash);
+  --sl-color-hairline: var(--gg-line);
+  --sl-color-hairline-light: var(--gg-line);
+  --sl-color-hairline-shade: var(--gg-line);
+}
+
+/* Starlight's grey scale runs ink to ground in dark and is inverted in light. */
+:root[data-theme="dark"],
+[data-theme="dark"] ::backdrop {
+  --sl-color-white: #e4ece9;
+  --sl-color-gray-1: #cfdbd6;
+  --sl-color-gray-2: #b7c6c0;
+  --sl-color-gray-3: #9eafa9;
+  --sl-color-gray-4: #637872;
+  --sl-color-gray-5: #34443f;
+  --sl-color-gray-6: #1d2825;
+  --sl-color-black: #111917;
+  --sl-color-accent-low: #1d3024;
+  --sl-color-accent: #5fae78;
+  --sl-color-accent-high: #9bd8ad;
+  --sl-color-text-accent: #9bd8ad;
+  --sl-color-orange-low: #2e231e;
+  --sl-color-orange: #ec9a76;
+  --sl-color-orange-high: #f4c3ad;
+  --sl-color-red-low: #3a1d1a;
+  --sl-color-red: #ff8f80;
+  --sl-color-red-high: #ffc4bb;
+  --sl-color-green-low: #1d3024;
+  --sl-color-green: #7fd6a4;
+  --sl-color-green-high: #b9ecc9;
+  --sl-color-blue-low: #1c2a31;
+  --sl-color-blue: #8fb0c2;
+  --sl-color-blue-high: #c4d7e1;
+}
+
+:root[data-theme="light"],
+[data-theme="light"] ::backdrop {
+  --sl-color-white: #17221f;
+  --sl-color-gray-1: #24302c;
+  --sl-color-gray-2: #34433e;
+  --sl-color-gray-3: #55665f;
+  --sl-color-gray-4: #84958f;
+  --sl-color-gray-5: #c4d0cb;
+  --sl-color-gray-6: #e8eeeb;
+  --sl-color-gray-7: #f1f5f3;
+  --sl-color-black: #ffffff;
+  --sl-color-accent-low: #e3f1e6;
+  --sl-color-accent: #33794c;
+  --sl-color-accent-high: #1f5a37;
+  --sl-color-text-accent: #276b44;
+  --sl-color-orange-low: #f6e4da;
+  --sl-color-orange: #c4673f;
+  --sl-color-orange-high: #8a3f1f;
+  --sl-color-red-low: #fdecea;
+  --sl-color-red: #b42318;
+  --sl-color-red-high: #7a1810;
+  --sl-color-green-low: #e3f1e6;
+  --sl-color-green: #1f7a4d;
+  --sl-color-green-high: #145232;
+  --sl-color-blue-low: #e6eef3;
+  --sl-color-blue: #5f7f92;
+  --sl-color-blue-high: #34505f;
+}

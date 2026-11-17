@@ -14,21 +14,26 @@ import {
 } from "@codemirror/view";
 import { defaultKeymap, historyKeymap, history, indentWithTab } from "@codemirror/commands";
 import { indentOnInput } from "@codemirror/language";
-import { oneDarkTheme } from "@codemirror/theme-one-dark";
 import type { EuHighlighter } from "./highlight/core";
 import { treeSitterHighlighting } from "./highlight/codemirror";
 import type { LineRange } from "./github";
 
-/** One Dark's chrome, with the text colours of the shared stylesheet. */
-const baseTheme: Extension = [
-  oneDarkTheme,
-  EditorView.theme({
-    "&": { height: "100%", backgroundColor: "var(--eu-bg)", color: "var(--eu-fg)" },
-    ".cm-gutters": { backgroundColor: "var(--eu-bg)" },
-    ".cm-scroller": { overflow: "auto", fontFamily: "monospace", fontSize: "14px" },
-    ".cm-content": { padding: "12px 0" },
-  }),
-];
+/**
+ * The editor's chrome, from the site's Ghost Gum tokens, with the text
+ * colours of eucalypt's shared highlighting stylesheet; both follow the
+ * site's light or dark theme.
+ */
+const baseTheme: Extension = EditorView.theme({
+  "&": { height: "100%", backgroundColor: "var(--eu-bg)", color: "var(--eu-fg)" },
+  ".cm-content": { padding: "12px 0", caretColor: "var(--gg-ink)" },
+  ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--gg-ink)" },
+  "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
+    { backgroundColor: "color-mix(in srgb, var(--gg-leaf) 24%, transparent)" },
+  ".cm-activeLine": { backgroundColor: "color-mix(in srgb, var(--gg-leaf) 7%, transparent)" },
+  ".cm-gutters": { backgroundColor: "var(--eu-bg)", color: "var(--gg-muted)", border: "none" },
+  ".cm-activeLineGutter": { backgroundColor: "transparent", color: "var(--gg-ink)" },
+  ".cm-scroller": { overflow: "auto", fontFamily: "var(--gg-mono)", fontSize: "14px" },
+});
 
 export function createEditor(
   container: HTMLElement,

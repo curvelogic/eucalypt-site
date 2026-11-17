@@ -12,3 +12,8 @@ vendor/
 *.db
 .beads-credential-key
 e2e-screenshots/
+
+# Built by Astro, and written from eucalypt by scripts/import-docs.mjs
+.astro/
+src/content/docs/docs/
+src/generated/

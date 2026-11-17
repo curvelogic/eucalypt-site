@@ -1,0 +1,18 @@
+---
+/**
+ * Set data-theme before first paint, from the same localStorage key as
+ * Starlight ("starlight-theme": "light", "dark" or "" for the system), so
+ * the homepage, the docs and /play share one choice.
+ */
+---
+
+<script is:inline>
+  (() => {
+    let stored = "";
+    try {
+      stored = localStorage.getItem("starlight-theme") ?? "";
+    } catch {}
+    const system = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    document.documentElement.dataset.theme = stored === "light" || stored === "dark" ? stored : system;
+  })();
+</script>

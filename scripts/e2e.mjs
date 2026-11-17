@@ -2,7 +2,7 @@
 //
 //   npm run build && npm run e2e [-- --screenshots DIR]
 //
-// Serves dist/ with `vite preview` and checks: the engine version is shown;
+// Serves dist/ with `astro preview` and checks the playground at /play/: the engine version is shown;
 // examples run; pasted source and #gh= views of every examples/aoc25 file
 // are highlighted exactly as `cargo xtask highlight-html` renders them
 // (vendor/fixtures, from scripts/vendor-eucalypt.sh --fixtures); #gh= views
@@ -26,14 +26,16 @@ const shots = shotsArg > 0 ? process.argv[shotsArg + 1] : null;
 if (shots) mkdirSync(shots, { recursive: true });
 
 const port = 4173;
-const base = `http://localhost:${port}/eucalypt-playground/`;
-const server = spawn(process.execPath, [join(root, "node_modules/vite/bin/vite.js"), "preview", "--port", String(port), "--strictPort"], {
+const base = `http://localhost:${port}/play/`;
+const server = spawn(process.execPath, [join(root, "node_modules/astro/bin/astro.mjs"), "preview", "--port", String(port), "--ignore-lock"], {
   cwd: root,
   stdio: ["ignore", "pipe", "inherit"],
+  // Its own process group, so stopping it stops the server the CLI starts.
+  detached: true,
 });
 await new Promise((resolve, reject) => {
   server.stdout.on("data", (d) => String(d).includes(String(port)) && resolve());
-  server.on("exit", (code) => reject(new Error(`vite preview exited with ${code}`)));
+  server.on("exit", (code) => reject(new Error(`astro preview exited with ${code}`)));
 });
 
 let failures = 0;
@@ -199,12 +201,29 @@ try {
     assert(/not a valid repository file link/.test(await page.textContent("#view-error")), "no error shown");
   });
 
+  await check("homepage hero switches example and format", async () => {
+    await page.goto(new URL("/", base).href);
+    await page.click("[data-pick=pipelines]");
+    await page.click("#ex-pipelines [data-fmt=json]");
+    const out = await page.textContent("#ex-pipelines [data-out=json]");
+    assert(out.includes('"ADA"') && out.includes('"GRACE"'), `output ${out}`);
+    assert(await page.isHidden("#ex-layers"), "the first example is still shown");
+  });
+
+  await check("homepage hero opens its example in the playground", async () => {
+    await page.goto(new URL("/", base).href);
+    await page.click("[data-pick=generate]");
+    await page.click("#ex-generate .ed-foot a");
+    await ready();
+    await page.waitForFunction(() => document.querySelector("#output").textContent.includes("web-2"));
+  });
+
   await check("no page errors", async () => {
     assert(pageErrors.length === 0, pageErrors.join("\n"));
   });
 } finally {
   await browser.close();
-  server.kill();
+  process.kill(-server.pid);
 }
 
 if (failures) {

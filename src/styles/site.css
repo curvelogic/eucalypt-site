@@ -1,0 +1,89 @@
+/* Base styles for the pages outside Starlight: the homepage and /play. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--gg-bg);
+  color: var(--gg-ink);
+  font: 17px/1.55 var(--gg-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--gg-link);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gg-leaf);
+  outline-offset: 2px;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--gg-mono);
+}
+
+.gg-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--gg-header-height);
+  padding-inline: 2rem;
+  border-bottom: 1px solid var(--gg-line);
+  background: color-mix(in srgb, var(--gg-bg) 86%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.gg-icon {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--gg-muted);
+  cursor: pointer;
+  padding: 0;
+}
+.gg-icon:hover {
+  color: var(--gg-ink);
+  border-color: var(--gg-line);
+}
+.gg-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* Shiki output from Astro's <Code>, coloured by theme. */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  background-color: transparent !important;
+}
+:root[data-theme="dark"] .astro-code,
+:root[data-theme="dark"] .astro-code span {
+  color: var(--shiki-dark);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .astro-code,
+  :root:not([data-theme]) .astro-code span {
+    color: var(--shiki-dark);
+  }
+}
+
+@media (max-width: 40rem) {
+  .gg-site-header {
+    padding-inline: 1rem;
+  }
+}

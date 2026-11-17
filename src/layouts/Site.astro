@@ -1,0 +1,56 @@
+---
+/**
+ * The page shell for the surfaces outside Starlight: the homepage and
+ * /play. Same tokens, fonts, header and theme handling as the docs.
+ */
+import "../styles/ghost-gum.css";
+import "../styles/site.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import ThemeScript from "../components/ThemeScript.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import Grove from "../components/Grove.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  active?: "docs" | "play" | "prelude" | "install" | "";
+  grove?: boolean;
+  bodyClass?: string;
+}
+const {
+  title,
+  description = "A little language for YAML, JSON and TOML.",
+  active = "",
+  grove = true,
+  bodyClass,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <ThemeScript />
+  </head>
+  <body class={bodyClass}>
+    {grove && <Grove strength="full" />}
+    <header class="gg-site-header">
+      <SiteHeader active={active}>
+        <slot name="tools" />
+        <a class="gg-icon" href="https://github.com/curvelogic/eucalypt" aria-label="eucalypt on GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+            ><path
+              d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"
+            ></path></svg
+          >
+        </a>
+        <ThemeToggle />
+      </SiteHeader>
+    </header>
+    <slot />
+  </body>
+</html>

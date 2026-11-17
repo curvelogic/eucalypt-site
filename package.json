@@ -1,32 +1,36 @@
 {
-  "name": "eucalypt-playground",
+  "name": "eucalypt-site",
   "version": "0.1.0",
-  "description": "Browser playground for the Eucalypt language",
+  "description": "eucalypt's website: homepage, documentation and playground",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "docs": "node scripts/import-docs.mjs",
+    "dev": "npm run docs && astro dev",
+    "build": "npm run docs && astro sync && tsc --noEmit && astro build && node scripts/check-site.mjs",
+    "preview": "astro preview",
     "vendor": "scripts/vendor-eucalypt.sh",
     "test": "vitest run",
     "e2e": "node scripts/e2e.mjs"
   },
   "dependencies": {
+    "@astrojs/starlight": "^0.43.1",
     "@codemirror/autocomplete": "^6.18.3",
     "@codemirror/commands": "^6.7.1",
     "@codemirror/language": "^6.10.6",
     "@codemirror/legacy-modes": "^6.4.2",
     "@codemirror/state": "^6.5.0",
-    "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
+    "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
+    "@fontsource/familjen-grotesk": "^5.3.0",
+    "@fontsource/fragment-mono": "^5.3.0",
+    "astro": "^7.4.12",
     "web-tree-sitter": "0.22.6"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
     "typescript": "^5.7.3",
     "vite": "^6.2.3",
-    "vite-plugin-wasm": "^3.4.1",
     "vitest": "^5.1.0"
   }
 }

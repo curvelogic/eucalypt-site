@@ -1,0 +1,25 @@
+---
+/**
+ * A titled, highlighted code panel: eucalypt source, data, or a terminal.
+ * Highlighting is done at build time with the grammar from the pinned
+ * eucalypt revision, so it costs no JavaScript.
+ */
+import { Code } from "astro:components";
+import grammar from "../generated/eucalypt.tmLanguage.json";
+
+interface Props {
+  title?: string;
+  code: string;
+  lang?: "eu" | "yaml" | "json" | "toml" | "csv" | "shellsession" | "text";
+  output?: boolean;
+  plain?: boolean;
+  class?: string;
+}
+const { title, code, lang = "eu", output = false, plain = false, class: cls } = Astro.props;
+const language = lang === "eu" ? (grammar as any) : lang;
+---
+
+<div class:list={["gg-snip", { output, plain }, cls]}>
+  {title && <div class="gg-snip-h">{title}</div>}
+  <Code code={code} lang={language} themes={{ light: "github-light", dark: "github-dark" }} defaultColor={false} />
+</div>

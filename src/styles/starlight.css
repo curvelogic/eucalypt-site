@@ -1,0 +1,49 @@
+/* Ghost Gum on Starlight's components. The tokens are in ghost-gum.css. */
+
+:root {
+  --sl-content-width: 46rem;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4,
+h1#_top {
+  font-family: var(--gg-display);
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+h1#_top {
+  font-size: 2.6rem;
+  line-height: 1.05;
+}
+
+/* The header: translucent, so the grove runs behind it. */
+header.header {
+  backdrop-filter: blur(6px);
+}
+
+/* The current page in the sidebar: a leaf wash with a leaf rule. */
+.sidebar-content a[aria-current="page"] {
+  background: var(--gg-leaf-wash);
+  color: var(--gg-link);
+  box-shadow: inset 2px 0 0 var(--gg-leaf);
+  font-weight: 600;
+}
+
+/* Asides: notes in leaf, cautions in bark salmon, danger in error red. */
+.starlight-aside--note {
+  --sl-color-asides-text-accent: var(--gg-link);
+  --sl-color-asides-border: var(--gg-leaf);
+  background-color: var(--gg-leaf-wash);
+}
+.starlight-aside--caution {
+  --sl-color-asides-text-accent: var(--gg-bark-ink);
+  --sl-color-asides-border: var(--gg-bark);
+  background-color: var(--gg-bark-wash);
+}
+.starlight-aside--danger {
+  --sl-color-asides-text-accent: var(--gg-err);
+  --sl-color-asides-border: var(--gg-err);
+  background-color: var(--gg-err-wash);
+}
