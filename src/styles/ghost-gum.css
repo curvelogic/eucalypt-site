@@ -53,6 +53,14 @@
   --gg-code-bar: #f1f5f3;
   --gg-code-line: #dde5e2;
   --gg-out-bg: #f3f6f5;
+  --gg-tab-on: #ffffff;
+  /* syntax colours for YAML, JSON and TOML output */
+  --gg-sx-comment: #7d8c86;
+  --gg-sx-string: #8a4b1c;
+  --gg-sx-key: #2a6b45;
+  --gg-sx-num: #9a4f1f;
+  --gg-sx-meta: #9b3d63;
+  --gg-sx-op: #5b6b66;
   --gg-shadow: 0 1px 0 #00000008, 0 24px 48px -28px #1b3a3366;
   /* the grove */
   --gg-trunk: #e7eee9;
@@ -86,6 +94,13 @@
   --gg-code-bar: #0f1715;
   --gg-code-line: #26332f;
   --gg-out-bg: #18221f;
+  --gg-tab-on: #2a3a36;
+  --gg-sx-comment: #6f837c;
+  --gg-sx-string: #e8b58a;
+  --gg-sx-key: #8fd1a2;
+  --gg-sx-num: #f0a982;
+  --gg-sx-meta: #e79ac0;
+  --gg-sx-op: #9eb0aa;
   --gg-shadow: 0 24px 48px -28px #000000aa;
   --gg-trunk: #1c2824;
   --gg-trunk-edge: #22302b;
@@ -95,6 +110,17 @@
 }
 
 /* Without JavaScript, or before a choice, the light theme applies. */
+
+/* Code is shown as typed: no ligatures, so "//=>" is not drawn as "//⇒"
+   (which in eucalypt is a different operator). */
+code,
+pre,
+kbd,
+.cm-content,
+.expressive-code {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
 
 /* ── Starlight ─────────────────────────────────────────────────────────────── */
 

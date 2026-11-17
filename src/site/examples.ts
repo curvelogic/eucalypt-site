@@ -80,8 +80,9 @@ powers: iterate(* 2, 1) take(8)`,
   },
 ];
 
-/** "A short tour": six ideas, each a line or two. */
-export const TOUR = [
+/** The tour ("Key ideas in short snippets"). `fails` names the file of an
+ * example whose point is the error it reports. */
+export const TOUR: { title: string; key: string; source: string; fails?: string }[] = [
   { title: "Pipelines", key: "catenation", source: "last: [1, 2, 3, 4, 5] reverse head" },
   { title: "Anaphora", key: "_0, {}", source: 'squares: [1, 2, 3, 4] map(_0 * _0)\nlabels: [:a, :b] map("item-{}")' },
   {
@@ -92,9 +93,12 @@ export const TOUR = [
   { title: "Deep merge", key: "<<", source: 'merged: { db: { host: "localhost" port: 5432 } }\n  << { db: { host: "db.prod" } }' },
   { title: "Destructuring", key: "f{w h}", source: "area{w h}: w * h\nroom: area{w: 4 h: 3}" },
   {
-    title: "Inline tests",
+    title: "Assertions",
     key: "//=>",
-    source: 'slug(s): s str.to-lower str.replace(" +", "-")\n\ntitle: "Hello Gum Trees" slug //=> "hello-gum-trees"',
+    // A real bug, caught: slug does not trim, so leading spaces become a
+    // hyphen. Adding str.trim to the pipeline makes the assertion pass.
+    source: 'slug(s): s str.to-lower str.replace(" +", "-")\n\ntitle: "  Hello Gum Trees" slug //=> "hello-gum-trees"',
+    fails: "slug.eu",
   },
 ];
 

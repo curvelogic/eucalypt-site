@@ -11,7 +11,6 @@
 // raw.githubusercontent.com. Runnable blocks in the docs and the homepage
 // tour show their pre-rendered output, load no engine until Run, and then
 // re-run as the source is edited.
-import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -29,16 +28,10 @@ if (shots) mkdirSync(shots, { recursive: true });
 
 const port = 4173;
 const base = `http://localhost:${port}/play/`;
-const server = spawn(process.execPath, [join(root, "node_modules/astro/bin/astro.mjs"), "preview", "--port", String(port), "--ignore-lock"], {
-  cwd: root,
-  stdio: ["ignore", "pipe", "inherit"],
-  // Its own process group, so stopping it stops the server the CLI starts.
-  detached: true,
-});
-await new Promise((resolve, reject) => {
-  server.stdout.on("data", (d) => String(d).includes(String(port)) && resolve());
-  server.on("exit", (code) => reject(new Error(`astro preview exited with ${code}`)));
-});
+// strictPort: if the port is taken, fail rather than test whatever
+// else is listening there (the astro CLI has no --strictPort flag).
+const { preview } = await import("astro");
+const server = await preview({ root, logLevel: "warn", server: { port }, vite: { preview: { strictPort: true } } });
 
 let failures = 0;
 async function check(name, fn) {
@@ -56,7 +49,7 @@ function assert(cond, message) {
 
 /** Per-line, per-character innermost ts- class list of the rendered editor. */
 async function editorClasses(page) {
-  return page.$$eval(".cm-content .cm-line", (lines) =>
+  return page.$$eval("#editor-container .cm-content .cm-line", (lines) =>
     lines.map((line) => {
       const out = [];
       const walk = (node, cls) => {
@@ -114,6 +107,7 @@ try {
     await open(base);
     const text = await page.textContent("#engine-version");
     assert(text === `eucalypt ${engine.version} (${engine.commit.slice(0, 7)})`, `version shown as ${text}`);
+    assert(/runs in your browser/.test(await page.textContent("#engine-note")), "no note that the engine runs in the browser");
     const href = await page.getAttribute("#engine-version", "href");
     assert(href.endsWith(engine.commit), `version links to ${href}`);
   });
@@ -124,10 +118,46 @@ try {
     assert(out.includes("hello: world"), `output ${out}`);
   });
 
+  await check("colours YAML, JSON and TOML output in either theme; EDN stays plain", async () => {
+    const link = (source, format) => base + "#" + Buffer.from(JSON.stringify({ source, format })).toString("base64");
+    // The colour of each highlighted run in the output, by its text.
+    const runs = () =>
+      page.$$eval("#output .cm-line span", (spans) => Object.fromEntries(spans.map((s) => [s.textContent.trim(), getComputedStyle(s).color])));
+    // What a Ghost Gum syntax token resolves to in the current theme.
+    const token = (name) =>
+      page.$eval("#output", (out, name) => {
+        const probe = out.appendChild(document.createElement("span"));
+        probe.style.color = `var(--gg-sx-${name})`;
+        const colour = getComputedStyle(probe).color;
+        probe.remove();
+        return colour;
+      }, name);
+    const source = 'service: { name: "web" port: 8080 live: true }';
+    const want = { yaml: ["service", "8080"], json: ['"service"', "8080"], toml: ["[service]", "8080"] };
+    for (const [format, [key, num]] of Object.entries(want)) {
+      await open(link(source, format));
+      await page.waitForSelector("#output .cm-line span");
+      for (const theme of ["light", "dark"]) {
+        await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
+        const r = await runs();
+        assert(r[key] === (await token("key")), `${format}, ${theme}: key ${key} is ${r[key]}`);
+        assert(r[num] === (await token("num")), `${format}, ${theme}: number ${num} is ${r[num]}`);
+        const str = format === "yaml" ? null : '"web"';
+        if (str) assert(r[str] === (await token("string")), `${format}, ${theme}: string is ${r[str]}`);
+      }
+      if (shots && format === "toml") await page.screenshot({ path: join(shots, "output-toml-dark.png") });
+      await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
+    }
+    await open(link(source, "edn"));
+    await page.waitForFunction(() => document.querySelector("#output").textContent.includes("8080"));
+    const spans = await page.$$eval("#output .cm-line span", (s) => s.length);
+    assert(spans === 0, `EDN output has ${spans} highlighted runs`);
+  });
+
   await check("highlights pasted source as xtask highlight-html does", async () => {
     for (const name of files) {
       const source = readFileSync(join(fixtures, `${name}.eu`), "utf8").replace(/\n+$/, "");
-      await page.click(".cm-content");
+      await page.click("#editor-container .cm-content");
       await page.keyboard.press("ControlOrMeta+A");
       await page.keyboard.press("Delete");
       await page.evaluate((t) => navigator.clipboard.writeText(t), source);
@@ -153,9 +183,9 @@ try {
     await page.waitForFunction(() => document.querySelector("#share-btn").textContent === "Copied!");
     const hash = await page.evaluate(() => location.hash);
     assert(hash.startsWith("#z="), `hash ${hash.slice(0, 20)}`);
-    const before = await page.$$eval(".cm-line", (l) => l.map((x) => x.textContent).join("\n"));
+    const before = await page.$$eval("#editor-container .cm-line", (l) => l.map((x) => x.textContent).join("\n"));
     await open(base + hash);
-    const after = await page.$$eval(".cm-line", (l) => l.map((x) => x.textContent).join("\n"));
+    const after = await page.$$eval("#editor-container .cm-line", (l) => l.map((x) => x.textContent).join("\n"));
     assert(after === before, `shared source did not round-trip: ${before.length} chars became ${after.length}: ${after.slice(0, 80)}`);
   });
 
@@ -168,10 +198,10 @@ try {
   for (const name of files) {
     await check(`#gh= view of examples/aoc25/${name}.eu matches xtask highlight-html`, async () => {
       await open(`${base}#gh=${engine.repository}/${engine.commit}/examples/aoc25/${name}.eu`);
-      await page.waitForSelector(".cm-content");
+      await page.waitForSelector("#editor-container .cm-content");
       compareLines(await editorClasses(page), expectedLines(name));
       assert(!(await page.isVisible("#run-btn")), "Run is visible in a repository view");
-      assert((await page.getAttribute(".cm-content", "contenteditable")) === "false", "view is editable");
+      assert((await page.getAttribute("#editor-container .cm-content", "contenteditable")) === "false", "view is editable");
     });
   }
 
@@ -274,12 +304,80 @@ try {
     await fresh.close();
   });
 
+  await check("format tabs rerun the code; errors go to the problems panel", async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await open(base);
+    await page.click("#format-tabs [data-fmt=json]");
+    assert((await page.textContent("#output-label")) === "output.json", await page.textContent("#output-label"));
+    await page.waitForFunction(() => document.querySelector("#output").textContent.includes('"hello": "world"'));
+    await page.click("#editor-container .cm-content");
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.type("x: no-such-name");
+    await page.click("#run-btn");
+    assert((await page.textContent("#problems-count")) === "1 error", await page.textContent("#problems-count"));
+    assert(await page.isVisible("#error-message"), "the error is not shown");
+    assert(await page.isHidden("#output"), "the output is still shown");
+    await page.setViewportSize({ width: 1280, height: 9000 });
+  });
+
+  await check("Share is a secondary button in the header", async () => {
+    await open(base);
+    const style = await page.$eval("#share-btn", (b) => {
+      const s = getComputedStyle(b);
+      const probe = document.body.appendChild(document.createElement("i"));
+      probe.style.color = "var(--gg-line-strong)";
+      const want = getComputedStyle(probe).color;
+      probe.remove();
+      return { inHeader: !!b.closest(".gg-site-header"), size: s.fontSize, weight: s.fontWeight, border: s.borderTopColor, want };
+    });
+    assert(style.inHeader, "Share is not in the header");
+    assert(style.size === "14px" && style.weight === "600", `Share is ${style.size} weight ${style.weight}`);
+    assert(style.border === style.want, `Share border ${style.border}, not ${style.want}`);
+  });
+
+  await check("/play fits phone widths without sideways overflow", async () => {
+    const phone = await browser.newContext({ viewport: { width: 320, height: 640 } });
+    const p = await phone.newPage();
+    try {
+      for (const width of [320, 360, 375, 390, 414]) {
+        await p.setViewportSize({ width, height: 740 });
+        await p.goto("about:blank");
+        await p.goto(base);
+        await p.waitForSelector("#loading-overlay", { state: "hidden" });
+        const over = await p.evaluate(() => {
+          const out = [];
+          if (document.documentElement.scrollWidth > innerWidth) out.push(`page ${document.documentElement.scrollWidth}`);
+          for (const el of document.querySelectorAll(".gg-site-header, .gg-site-header *, #toolbar, #toolbar *, #status-bar, #status-bar *, .tabs, .tabs *")) {
+            const r = el.getBoundingClientRect();
+            if (r.width && r.right > innerWidth + 0.5) out.push(`${el.id ? "#" + el.id : el.className || el.tagName} ends at ${Math.round(r.right)}`);
+            if (el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== "visible" && !el.matches(".sr-only, #engine-version"))
+              out.push(`${el.id || el.className || el.tagName} scrolls by ${el.scrollWidth - el.clientWidth}`);
+          }
+          return out;
+        });
+        assert(over.length === 0, `at ${width}: ${over.slice(0, 5).join("; ")}`);
+      }
+    } finally {
+      await phone.close();
+    }
+  });
+
+  await check("/play does not scroll sideways at tablet and desktop widths", async () => {
+    for (const width of [768, 772, 901, 1024, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await open(base);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+      assert(over <= 0, `${over}px wider than the screen at ${width}`);
+    }
+    await page.setViewportSize({ width: 1280, height: 9000 });
+  });
+
   await check("no page errors", async () => {
     assert(pageErrors.length === 0, pageErrors.join("\n"));
   });
 } finally {
   await browser.close();
-  process.kill(-server.pid);
+  await server.stop();
 }
 
 if (failures) {
