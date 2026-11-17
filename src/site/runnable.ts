@@ -78,6 +78,11 @@ const BROWSER_CANNOT_RUN: { page: string; contains: string; reason: string }[] =
     contains: "iterate(+ 3, 0) nth(100000)",
     reason: "100,000 iterations take more steps than the browser engine's step limit allows",
   },
+  {
+    page: "docs/guide/dicts.md",
+    contains: '` "the side of the grid"',
+    reason: "a 141 × 141 grid search takes more steps than the browser engine's step limit allows",
+  },
 ];
 
 /** The page in eucalypt a file was imported from, e.g. docs/guide/anaphora.md. */
