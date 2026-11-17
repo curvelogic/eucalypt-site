@@ -75,12 +75,6 @@ kbd {
 :root[data-theme="dark"] .astro-code span {
   color: var(--shiki-dark);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .astro-code,
-  :root:not([data-theme]) .astro-code span {
-    color: var(--shiki-dark);
-  }
-}
 
 @media (max-width: 40rem) {
   .gg-site-header {

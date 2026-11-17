@@ -218,6 +218,21 @@ try {
     await page.waitForFunction(() => document.querySelector("#output").textContent.includes("web-2"));
   });
 
+  await check("theme is light by default, and a choice carries to the docs", async () => {
+    const fresh = await browser.newContext({ colorScheme: "dark" });
+    const p = await fresh.newPage();
+    await p.goto(new URL("/", base).href);
+    assert((await p.getAttribute("html", "data-theme")) === "light", "not light by default on a dark system");
+    await p.selectOption("gg-theme-select select", "dark");
+    await p.goto(new URL("/docs/", base).href);
+    assert((await p.getAttribute("html", "data-theme")) === "dark", "dark not remembered on the docs");
+    assert((await p.inputValue("gg-theme-select select")) === "dark", "docs select does not show dark");
+    await p.selectOption("gg-theme-select select", "auto");
+    await p.goto(new URL("/play/", base).href);
+    assert((await p.getAttribute("html", "data-theme")) === "dark", "auto does not follow a dark system");
+    await fresh.close();
+  });
+
   await check("no page errors", async () => {
     assert(pageErrors.length === 0, pageErrors.join("\n"));
   });

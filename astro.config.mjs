@@ -23,6 +23,8 @@ export default defineConfig({
       components: {
         Header: "./src/components/starlight/Header.astro",
         SkipLink: "./src/components/starlight/SkipLink.astro",
+        ThemeProvider: "./src/components/starlight/ThemeProvider.astro",
+        ThemeSelect: "./src/components/ThemeSelect.astro",
       },
       expressiveCode: {
         shiki: { langs: [generated("eucalypt.tmLanguage.json")] },

@@ -3,10 +3,10 @@
  * /play. Dark values are not an inversion: the ground is a eucalypt
  * green-black, the leaf lightens to a sage and the bark softens to salmon.
  *
- * The theme is chosen by data-theme on <html>, which Starlight sets from
- * localStorage "starlight-theme"; the homepage and /play use the same key
- * (src/components/ThemeScript.astro), so a choice carries across the site.
- * Without JavaScript the system preference applies.
+ * The theme is chosen by data-theme on <html>: light unless the reader picks
+ * dark or auto (src/components/ThemeScript.astro and ThemeSelect.astro, used
+ * on every page in place of Starlight's own), so the site keeps one visual
+ * identity by default and remembers a choice across the site.
  *
  * The bottom half maps the tokens onto Starlight's custom properties, so
  * the docs theme is overrides, not a fork.
@@ -59,7 +59,7 @@
   --gg-trunk-edge: #dbe4de;
   --gg-patch: #eed8ca;
   --gg-canopy: #d6e5da;
-  --gg-grove-strength: 0.5;
+  --gg-grove-strength: 0.3;
 }
 
 /* Dark */
@@ -91,42 +91,10 @@
   --gg-trunk-edge: #22302b;
   --gg-patch: #33281f;
   --gg-canopy: #1a2a22;
-  --gg-grove-strength: 0.55;
+  --gg-grove-strength: 0.32;
 }
 
-/* No JavaScript: follow the system. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    color-scheme: dark;
-    --gg-bg: #111917;
-    --gg-surface: #18221f;
-    --gg-ink: #e4ece9;
-    --gg-muted: #9eafa9;
-    --gg-line: #283633;
-    --gg-line-strong: #3b4d48;
-    --gg-leaf: #8ccf9f;
-    --gg-leaf-ink: #0d1a17;
-    --gg-link: #9bd8ad;
-    --gg-leaf-wash: #1d3024;
-    --gg-bark: #ec9a76;
-    --gg-bark-ink: #ec9a76;
-    --gg-bark-wash: #2e231e;
-    --gg-haze: #8fb0c2;
-    --gg-err: #ff8f80;
-    --gg-err-wash: #3a1d1a;
-    --gg-ok: #7fd6a4;
-    --gg-code-bg: #141d1b;
-    --gg-code-bar: #0f1715;
-    --gg-code-line: #26332f;
-    --gg-out-bg: #18221f;
-    --gg-shadow: 0 24px 48px -28px #000000aa;
-    --gg-trunk: #1c2824;
-    --gg-trunk-edge: #22302b;
-    --gg-patch: #33281f;
-    --gg-canopy: #1a2a22;
-    --gg-grove-strength: 0.55;
-  }
-}
+/* Without JavaScript, or before a choice, the light theme applies. */
 
 /* ── Starlight ─────────────────────────────────────────────────────────────── */
 

@@ -334,11 +334,17 @@
 }
 
 .pairs,
-.pillars,
-.tour {
+.pillars {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
+}
+/* Two cards a row, each with its source above its output: a line of
+   eucalypt and its result each get the card's full width. */
+.tour {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 28px;
 }
 .pair,
 .tcard {
@@ -392,14 +398,14 @@
 }
 .tcard .duo {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   border: 1px solid var(--gg-code-line);
   border-radius: 10px;
   overflow: hidden;
   background: var(--gg-code-bg);
 }
 .tcard .duo > .gg-snip + .gg-snip {
-  border-left: 1px solid var(--gg-code-line);
+  border-top: 1px dashed var(--gg-code-line);
 }
 .tcard .astro-code {
   font-size: 12.5px;
@@ -569,13 +575,8 @@
   .s-h h2 {
     font-size: 30px;
   }
-  .learn,
-  .tcard .duo {
+  .learn {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .tcard .duo > .gg-snip + .gg-snip {
-    border-left: 0;
-    border-top: 1px solid var(--gg-code-line);
   }
   .ed-pair:not([hidden]) {
     grid-template-columns: minmax(0, 1fr);

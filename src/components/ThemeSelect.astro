@@ -1,0 +1,73 @@
+---
+/**
+ * Light, dark or auto (follow the system), remembered in localStorage
+ * "eucalypt-theme". Light is the default: the site's identity is the light
+ * Ghost Gum palette. The same control is used on every page, including the
+ * docs, where it replaces Starlight's own.
+ */
+---
+
+<gg-theme-select class="gg-theme-select">
+  <label>
+    <span class="sr-only">Theme</span>
+    <select aria-label="Theme">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="auto">Auto</option>
+    </select>
+  </label>
+</gg-theme-select>
+
+<script>
+  const key = "eucalypt-theme";
+  const dark = matchMedia("(prefers-color-scheme: dark)");
+  const load = (): string => {
+    try {
+      const v = localStorage.getItem(key);
+      return v === "dark" || v === "auto" ? v : "light";
+    } catch {
+      return "light";
+    }
+  };
+  const apply = (choice: string) => {
+    document.documentElement.dataset.theme = choice === "auto" ? (dark.matches ? "dark" : "light") : choice;
+  };
+  class ThemeSelect extends HTMLElement {
+    connectedCallback() {
+      const select = this.querySelector("select")!;
+      select.value = load();
+      select.addEventListener("change", () => {
+        try {
+          localStorage.setItem(key, select.value);
+        } catch {}
+        apply(select.value);
+        for (const other of document.querySelectorAll<HTMLSelectElement>("gg-theme-select select")) other.value = select.value;
+      });
+    }
+  }
+  if (!customElements.get("gg-theme-select")) customElements.define("gg-theme-select", ThemeSelect);
+  dark.addEventListener("change", () => load() === "auto" && apply("auto"));
+</script>
+
+<style>
+  .gg-theme-select select {
+    font: 600 0.85rem var(--gg-body);
+    color: var(--gg-muted);
+    background: transparent;
+    border: 1px solid var(--gg-line);
+    border-radius: 8px;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+  }
+  .gg-theme-select select:hover {
+    color: var(--gg-ink);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+</style>

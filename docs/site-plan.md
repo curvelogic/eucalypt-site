@@ -23,9 +23,10 @@ and review artifacts; this plan follows them.
   overrides, not a fork. `SiteHeader.astro` (mark, wordmark, Docs,
   Playground, Prelude, Install) is the header on all three; Starlight's
   `Header` is overridden to use it, with search, version and theme select.
-- **Theme.** `data-theme` on `<html>`, from localStorage
-  `starlight-theme`, which Starlight already uses; the homepage and `/play`
-  read and write the same key, so one choice holds across the site.
+- **Theme.** Light by default, for a stable visual identity; the reader can
+  choose dark or auto (follow the system), remembered in localStorage
+  `eucalypt-theme`. One select (`ThemeSelect.astro`) and one pre-paint script
+  (`ThemeScript.astro`) serve every page, replacing Starlight's own.
 - **Grove.** One SVG, drawn at build time from a fixed seed
   (`src/components/grove.ts`), fixed behind the page: full strength on the
   homepage, about half on the docs (via the `SkipLink` override, the first
