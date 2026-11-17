@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { docsFiles, docsMapping, playFiles, redirectPage, SITE } from "../scripts/old-site-redirects.mjs";
+import { docsFiles, docsMapping, redirectPage, SITE } from "../scripts/old-site-redirects.mjs";
 
 const redirects = {
   "index.html": "/docs/",
@@ -48,13 +48,5 @@ describe("redirect page", () => {
   });
   it("forwards by script first, keeping the fragment", () => {
     expect(page.indexOf("location.hash")).toBeLessThan(page.indexOf("http-equiv"));
-  });
-});
-
-describe("old playground", () => {
-  it("forwards index and 404 to /play/", () => {
-    const files = playFiles();
-    expect(files["index.html"]).toContain(`location.replace("${SITE}/play/" + location.hash)`);
-    expect(files["404.html"]).toBe(files["index.html"]);
   });
 });

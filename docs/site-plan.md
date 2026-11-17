@@ -166,12 +166,10 @@ plus a `404.html` that maps any other path by script. The pages are
 generated from `redirects.json`. The mdBook workflow is retired at the same
 time, so a release does not overwrite them.
 
-`scripts/old-site-redirects.mjs` writes both sets of pages: `docs OUT
-OLD_PATHS` for the old docs (old pages with no new equivalent, and pages
-eucalypt has since deleted, go to `/docs/`), and `play OUT` for the old
-playground, whose page forwards to `/play/` with the fragment. `npm run e2e`
-follows each kind of redirect in Chromium against the built site
-(`scripts/redirects-e2e.mjs`).
+`scripts/old-site-redirects.mjs docs OUT OLD_PATHS` writes the pages for the
+old docs (old pages with no new equivalent, and pages eucalypt has since
+deleted, go to `/docs/`). `scripts/redirects-e2e.mjs` follows them in
+Chromium against the built site.
 
 ## Deployment
 
@@ -183,8 +181,8 @@ truth; `.github/workflows/deploy.yml` builds without secrets and deploys with
 `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. A Custom Domain creates
 its own DNS record and certificate, so no record is added by hand (an
 existing CNAME on the hostname would block it). The old playground at
-`curvelogic.github.io/eucalypt-playground/` keeps serving its last Pages
-deployment until it is retired (lane 5).
+`curvelogic.github.io/eucalypt-playground/` is retired: the repository was
+renamed, and its old share links are not forwarded.
 
 ## Build lanes that follow
 
