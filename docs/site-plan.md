@@ -159,6 +159,13 @@ plus a `404.html` that maps any other path by script. The pages are
 generated from `redirects.json`. The mdBook workflow is retired at the same
 time, so a release does not overwrite them.
 
+`scripts/old-site-redirects.mjs` writes both sets of pages: `docs OUT
+OLD_PATHS` for the old docs (old pages with no new equivalent, and pages
+eucalypt has since deleted, go to `/docs/`), and `play OUT` for the old
+playground, whose page forwards to `/play/` with the fragment. `npm run e2e`
+follows each kind of redirect in Chromium against the built site
+(`scripts/redirects-e2e.mjs`).
+
 ## Deployment
 
 Cloudflare, where the `curvelogic.info` zone and the owner's other apps

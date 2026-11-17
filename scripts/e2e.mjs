@@ -10,7 +10,8 @@
 // are compressed and still read the old form. The #gh= checks fetch from
 // raw.githubusercontent.com. Runnable blocks in the docs and the homepage
 // tour show their pre-rendered output, load no engine until Run, and then
-// re-run as the source is edited.
+// re-run as the source is edited. Then scripts/redirects-e2e.mjs checks the
+// redirect pages for the old addresses against the same build.
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -385,3 +386,10 @@ if (failures) {
   process.exit(1);
 }
 console.log("all checks passed");
+
+// The redirect pages for the old addresses, against the same build.
+console.log("\nredirects from the old addresses:");
+const { spawnSync } = await import("node:child_process");
+const redirectArgs = shots ? ["--report", join(shots, "redirects.json")] : [];
+const redirectRun = spawnSync(process.execPath, [join(root, "scripts/redirects-e2e.mjs"), ...redirectArgs], { stdio: "inherit" });
+process.exit(redirectRun.status ?? 1);
