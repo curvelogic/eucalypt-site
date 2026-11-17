@@ -153,7 +153,9 @@ deep-miss: data ~ :cache ~ :ttl`,
   {
     name: "Lenses",
     format: "yaml",
-    source: `config: { server: { db: { host: "localhost" port: 5432 } } }
+    source: `{ import: "lens.eu" }
+
+config: { server: { db: { host: "localhost" port: 5432 } } }
 
 \` "Read a nested value through a lens."
 host: config view(‹:server :db :host›)
@@ -162,41 +164,37 @@ host: config view(‹:server :db :host›)
 bumped: config over(‹:server :db :port›, + 1)
 
 \` "Replace the value: -> ignores the old one."
-moved: config over(‹:server :db :host›, -> "db.prod")
-
-# The playground cannot import lens.eu yet, so here are the
-# parts of it this example uses, simplified from lens.eu.
-
-\` "\`at(key)\` - a lens on the value at \`key\` in a block."
-at(key, k): {
-  fmap: meta(k).fmap
-  s(obj): fmap({ nv: • }.(obj alter-value(key, nv)),
-               k(obj lookup(key)))
-}.(s // meta(k))
-
-\` "\`view(lens, data)\` - the value \`lens\` focuses on."
-view(lens, data): data lens(identity // { fmap: flip(const) })
-
-\` "\`over(lens, fn, data)\` - \`data\` with \`fn\` applied at the focus."
-over(lens, fn, data):
-  data lens(fn // { fmap: identity, pure: identity, ap: identity })
-
-\` "A path of keys as one lens: ‹:a :b› is at(:a) ∘ at(:b)."
-‹xs›: xs map(at) foldr(∘, identity)`,
+moved: config over(‹:server :db :host›, -> "db.prod")`,
   },
   {
     name: "Monads",
     format: "yaml",
-    source: `\` "A :for block gives every combination of its lists."
-sizes: { :for size: [:s, :m] colour: [:red, :blue] }.("{size}-{colour}")
+    source: `{ import: "state.eu" }
 
-\` { doc: "A :random block threads the random stream." export: :suppress }
+\` "A :for block gives every combination of its lists."
+sizes: { :for size: [:s, :m] hue: [:red, :blue] }.("{size}-{hue}")
+
+\` { doc: "A :random block threads the random stream."
+    export: :suppress }
 dice: { :random
   d6: random.int(6)
   d20: random.int(20)
 }.[d6 + 1, d20 + 1]
 
 \` "Run the action from a fixed seed and take its value."
-rolls: dice(random.stream(42)).value`,
+rolls: dice(random.stream(42)).value
+
+\` { doc: "A :state block threads a state block."
+    export: :suppress }
+tick: { :state
+  n: state.query(_.count)
+  _: state.modify(:count, + 1)
+}.(n)
+
+\` "Run the action from a starting state and take its value."
+seen: state.eval(tick, { count: 41 })
+
+\` "The state the action leaves behind."
+after: state.run(tick, { count: 41 }).state`,
   },
 ];
