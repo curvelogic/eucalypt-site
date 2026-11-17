@@ -9,7 +9,6 @@
 // are read-only, link back to their source and pick out lines; share links
 // are compressed and still read the old form. The #gh= checks fetch from
 // raw.githubusercontent.com.
-import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -27,16 +26,10 @@ if (shots) mkdirSync(shots, { recursive: true });
 
 const port = 4173;
 const base = `http://localhost:${port}/play/`;
-const server = spawn(process.execPath, [join(root, "node_modules/astro/bin/astro.mjs"), "preview", "--port", String(port), "--ignore-lock"], {
-  cwd: root,
-  stdio: ["ignore", "pipe", "inherit"],
-  // Its own process group, so stopping it stops the server the CLI starts.
-  detached: true,
-});
-await new Promise((resolve, reject) => {
-  server.stdout.on("data", (d) => String(d).includes(String(port)) && resolve());
-  server.on("exit", (code) => reject(new Error(`astro preview exited with ${code}`)));
-});
+// strictPort: if the port is taken, fail rather than test whatever
+// else is listening there (the astro CLI has no --strictPort flag).
+const { preview } = await import("astro");
+const server = await preview({ root, logLevel: "warn", server: { port }, vite: { preview: { strictPort: true } } });
 
 let failures = 0;
 async function check(name, fn) {
@@ -269,12 +262,70 @@ try {
     await fresh.close();
   });
 
+  await check("format tabs rerun the code; errors go to the problems panel", async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await open(base);
+    await page.click("#format-tabs [data-fmt=json]");
+    assert((await page.textContent("#output-label")) === "output.json", await page.textContent("#output-label"));
+    await page.waitForFunction(() => document.querySelector("#output").textContent.includes('"hello": "world"'));
+    await page.click("#editor-container .cm-content");
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.type("x: no-such-name");
+    await page.click("#run-btn");
+    assert((await page.textContent("#problems-count")) === "1 error", await page.textContent("#problems-count"));
+    assert(await page.isVisible("#error-message"), "the error is not shown");
+    assert(await page.isHidden("#output"), "the output is still shown");
+    await page.setViewportSize({ width: 1280, height: 9000 });
+  });
+
+  await check("Share is a secondary button in the header", async () => {
+    await open(base);
+    const style = await page.$eval("#share-btn", (b) => {
+      const s = getComputedStyle(b);
+      const probe = document.body.appendChild(document.createElement("i"));
+      probe.style.color = "var(--gg-line-strong)";
+      const want = getComputedStyle(probe).color;
+      probe.remove();
+      return { inHeader: !!b.closest(".gg-site-header"), size: s.fontSize, weight: s.fontWeight, border: s.borderTopColor, want };
+    });
+    assert(style.inHeader, "Share is not in the header");
+    assert(style.size === "14px" && style.weight === "600", `Share is ${style.size} weight ${style.weight}`);
+    assert(style.border === style.want, `Share border ${style.border}, not ${style.want}`);
+  });
+
+  await check("/play fits phone widths without sideways overflow", async () => {
+    const phone = await browser.newContext({ viewport: { width: 320, height: 640 } });
+    const p = await phone.newPage();
+    try {
+      for (const width of [320, 360, 375, 390, 414]) {
+        await p.setViewportSize({ width, height: 740 });
+        await p.goto("about:blank");
+        await p.goto(base);
+        await p.waitForSelector("#loading-overlay", { state: "hidden" });
+        const over = await p.evaluate(() => {
+          const out = [];
+          if (document.documentElement.scrollWidth > innerWidth) out.push(`page ${document.documentElement.scrollWidth}`);
+          for (const el of document.querySelectorAll(".gg-site-header, .gg-site-header *, #toolbar, #toolbar *, #status-bar, #status-bar *, .tabs, .tabs *")) {
+            const r = el.getBoundingClientRect();
+            if (r.width && r.right > innerWidth + 0.5) out.push(`${el.id ? "#" + el.id : el.className || el.tagName} ends at ${Math.round(r.right)}`);
+            if (el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== "visible" && !el.matches(".sr-only, #engine-version"))
+              out.push(`${el.id || el.className || el.tagName} scrolls by ${el.scrollWidth - el.clientWidth}`);
+          }
+          return out;
+        });
+        assert(over.length === 0, `at ${width}: ${over.slice(0, 5).join("; ")}`);
+      }
+    } finally {
+      await phone.close();
+    }
+  });
+
   await check("no page errors", async () => {
     assert(pageErrors.length === 0, pageErrors.join("\n"));
   });
 } finally {
   await browser.close();
-  process.kill(-server.pid);
+  await server.stop();
 }
 
 if (failures) {

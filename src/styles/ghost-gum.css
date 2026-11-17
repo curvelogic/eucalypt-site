@@ -53,6 +53,7 @@
   --gg-code-bar: #f1f5f3;
   --gg-code-line: #dde5e2;
   --gg-out-bg: #f3f6f5;
+  --gg-tab-on: #ffffff;
   /* syntax colours for YAML, JSON and TOML output */
   --gg-sx-comment: #7d8c86;
   --gg-sx-string: #8a4b1c;
@@ -93,6 +94,7 @@
   --gg-code-bar: #0f1715;
   --gg-code-line: #26332f;
   --gg-out-bg: #18221f;
+  --gg-tab-on: #2a3a36;
   --gg-sx-comment: #6f837c;
   --gg-sx-string: #e8b58a;
   --gg-sx-key: #8fd1a2;
