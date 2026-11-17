@@ -53,8 +53,11 @@ describe("playground examples", () => {
         const opens = /^[^\s}\]]/.test(lines[n]);
         // It must follow a blank line, or the doc string or comment it
         // belongs to.
-        const prev = lines[n - 1];
-        const ok = prev === "" || prev.startsWith("`") || prev.startsWith("#");
+        // A doc string continued over indented lines counts from its first.
+        let k = n - 1;
+        while (k > 0 && /^\s/.test(lines[k])) k--;
+        const prev = lines[k];
+        const ok = lines[n - 1] === "" || prev.startsWith("`") || prev.startsWith("#");
         expect(opens && !ok, `${name}, line ${n + 1}`).toBe(false);
       }
     }
@@ -84,17 +87,20 @@ describe("playground examples", () => {
     expect(out.total).toBe(400);
   });
 
-  it("Lenses: view and over", () => {
+  it("Lenses: view and over, with lens.eu imported", () => {
     const out = data("Lenses");
     expect(out.host).toBe("localhost");
     expect(out.bumped).toEqual({ server: { db: { host: "localhost", port: 5433 } } });
     expect(out.moved).toEqual({ server: { db: { host: "db.prod", port: 5432 } } });
   });
 
-  it("Monads: :for combinations and seeded :random rolls", () => {
+  it("Monads: :for combinations, seeded :random rolls and a :state counter", () => {
     const out = data("Monads");
     expect(out.sizes).toEqual(["s-red", "s-blue", "m-red", "m-blue"]);
     expect(out.rolls).toEqual([2, 12]);
+    expect(out.seen).toBe(41);
+    expect(out.after).toEqual({ count: 42 });
     expect(out).not.toHaveProperty("dice");
+    expect(out).not.toHaveProperty("tick");
   });
 });
