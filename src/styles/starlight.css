@@ -24,7 +24,7 @@ header.header {
 }
 
 /* The current page in the sidebar: a leaf wash with a leaf rule. */
-.sidebar-content a[aria-current="page"] {
+.sidebar-content a[aria-current="page"]:not(.gg-menu-list a) {
   background: var(--gg-leaf-wash);
   color: var(--gg-link);
   box-shadow: inset 2px 0 0 var(--gg-leaf);

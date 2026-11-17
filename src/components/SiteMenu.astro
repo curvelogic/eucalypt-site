@@ -78,6 +78,15 @@ const { active = "" } = Astro.props;
     overflow-x: auto;
     white-space: nowrap;
   }
+  /* The theme select at the menu's foot, on every surface. */
+  .gg-menu-list :global(.gg-menu-theme) {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.85rem;
+    font: 600 0.9rem var(--gg-body);
+    color: var(--gg-muted);
+  }
   .gg-menu-install code {
     font: inherit;
     color: var(--gg-ink);

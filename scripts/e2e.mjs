@@ -412,6 +412,15 @@ try {
       await button.click();
       await p.mouse.click(200, 800);
       assert(await panel.isHidden(), `${path}: a click outside did not close the menu`);
+      // Widening past the breakpoint closes it, and the links return.
+      await button.click();
+      await p.setViewportSize({ width: 1000, height: 844 });
+      // Hidden when wide, so out of the accessibility tree: find it by its hook.
+      const hook = p.locator("[data-menu-btn]");
+      await p.waitForFunction(() => document.querySelector("[data-menu-btn]").getAttribute("aria-expanded") === "false", null, { timeout: 2000 }).catch(() => {});
+      assert((await hook.getAttribute("aria-expanded")) === "false" && (await panel.isHidden()), `${path}: widening did not close the menu`);
+      assert(await p.locator(".gg-nav").isVisible(), `${path}: header links not back when wide`);
+      await p.setViewportSize({ width: 390, height: 844 });
     }
     // The docs keep Starlight's menu, which carries the same links.
     await p.goto(new URL("/docs/guide/string-interpolation/", base).href);

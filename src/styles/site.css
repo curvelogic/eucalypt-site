@@ -82,16 +82,10 @@ kbd {
   }
 }
 
-/* Header tools that move into the menu on a phone (SiteHeader.astro). */
+/* Header tools that move into the menu on a phone (SiteHeader.astro);
+   the menu's own theme row is styled in SiteMenu.astro. */
 .gg-wide {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-}
-.gg-menu-theme {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font: 600 0.9rem var(--gg-body);
-  color: var(--gg-muted);
 }
