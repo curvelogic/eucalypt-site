@@ -96,10 +96,14 @@ They are used in three places:
    snippets carry what `eu` printed), an example that stops working fails
    the build, and
    the output is there on first paint without JavaScript. "Open in the
-   playground" links are built with `encodeState`. The live stage mounts
-   `createEditor` over the pre-rendered source on idle or first focus,
-   loads the engine, and re-evaluates as the source changes (debounced, with
-   the playground's step limit), switching the output pane in place.
+   playground" links are built with `encodeState`. The live stage
+   (`src/site/hero.ts`) mounts `createEditor` over the pre-rendered source
+   on idle or first focus, loads the engine, and re-evaluates as the source
+   changes (debounced, with the engine's step limit), switching the output
+   pane in place; an example keeps its pre-rendered output until it is
+   edited. Errors are laid out as the command line lays them out
+   (`src/diagnostic.ts`, shared with the build). Long lines wrap rather
+   than scroll, and the hero stacks below 1280px.
 3. **Runnable docs blocks**: each ` ```eu ` fence (not `notest`) gets its
    output pre-rendered at build time by the same engine, a Run button that
    mounts the editor in place, and "Open in the playground". A fence whose

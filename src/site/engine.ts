@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { EvalResult } from "../evaluator";
+import { formatDiagnostic } from "../diagnostic";
 import { encodeState } from "../share";
 
 type Engine = typeof import("../../vendor/engine/eucalypt.js");
@@ -57,22 +58,7 @@ export async function output(name: string, source: string, format: Format): Prom
 export async function diagnostic(name: string, file: string, source: string): Promise<string> {
   const result = await evaluate(source, "yaml");
   if (result.success || !result.error) throw new Error(`example "${name}" was meant to fail, but evaluated`);
-  const { message, location } = result.error;
-  const [first, ...rest] = message.split("\n");
-  const lines = [`error: ${first}`, ...rest];
-  if (location) {
-    const n = String(location.line);
-    const pad = " ".repeat(n.length);
-    const text = source.split("\n")[location.line - 1] ?? "";
-    const width = location.end_line === location.line ? Math.max(1, location.end_column - location.column) : 1;
-    lines.push(
-      `${pad} ┌─ ${file}:${location.line}:${location.column}`,
-      `${pad} │`,
-      `${n} │ ${text}`,
-      `${pad} │ ${" ".repeat(location.column - 1)}${"^".repeat(width)}`,
-    );
-  }
-  return lines.join("\n");
+  return formatDiagnostic(result.error, file, source);
 }
 
 /** A link that opens `source` in the playground. */

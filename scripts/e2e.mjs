@@ -10,7 +10,8 @@
 // are compressed and still read the old form. The #gh= checks fetch from
 // raw.githubusercontent.com. Runnable blocks in the docs and the homepage
 // tour show their pre-rendered output, load no engine until Run, and then
-// re-run as the source is edited.
+// re-run as the source is edited. The homepage hero goes live on idle and
+// re-evaluates its source as it is edited, and its code fits at every width.
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -218,6 +219,49 @@ try {
     await page.click("#ex-generate .ed-foot a");
     await ready();
     await page.waitForFunction(() => document.querySelector("#output").textContent.includes("web-2"));
+  });
+
+  await check("homepage hero goes live and re-evaluates as the source changes", async () => {
+    await page.goto(new URL("/", base).href);
+    // Live on idle, without taking focus.
+    await page.waitForSelector("#ex-layers .cm-editor");
+    const pre = await page.textContent("#ex-layers [data-out=yaml]");
+    assert(pre.includes("db.staging"), "pre-rendered output gone before any edit");
+    await page.click("#ex-layers .cm-content");
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.type("\nextra: 6 * 7");
+    await page.waitForFunction(() => document.querySelector("#ex-layers [data-live]")?.textContent.includes("extra: 42"));
+    assert(await page.isHidden("#ex-layers [data-out=yaml]"), "pre-rendered output still shown after an edit");
+    // The format buttons evaluate the edited source.
+    await page.click("#ex-layers [data-fmt=json]");
+    await page.waitForFunction(() => document.querySelector("#ex-layers [data-live]").textContent.includes('"extra": 42'));
+    assert((await page.textContent("#ex-layers .ed-foot [data-cmd]")) === "eu -j layers.eu", "command not switched");
+    assert((await page.textContent("#ex-layers [data-fmt=yaml]")).trim() === "YAML", "format button relabelled");
+    // A diagnostic, laid out as the command line does, disables the formats.
+    await page.click("#ex-layers .cm-content");
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.type(" + nope");
+    await page.waitForFunction(() => document.querySelector("#ex-layers [data-live].err")?.textContent.includes("┌─ layers.eu:"));
+    assert(await page.isDisabled("#ex-layers [data-fmt=yaml]"), "formats not disabled on an error");
+    assert((await page.textContent("#ex-layers [data-label]")) === "Error", "pane not labelled Error");
+    // Another example keeps its pre-rendered output, and its picker works.
+    await page.click("[data-pick=pipelines]");
+    assert((await page.textContent("#ex-pipelines [data-out=json]")).includes('"ADA"'), "pipelines output lost");
+  });
+
+  await check("homepage hero source does not overflow, side by side or stacked", async () => {
+    for (const width of [1101, 1280, 1440]) {
+      const p = await browser.newPage({ viewport: { width, height: 900 } });
+      await p.goto(new URL("/", base).href);
+      for (const id of await p.$$eval("[data-pick]", (els) => els.map((e) => e.dataset.pick))) {
+        await p.click(`[data-pick=${id}]`);
+        const over = await p.$$eval(`#ex-${id} :is(pre, .cm-scroller)`, (els) =>
+          els.filter((e) => e.offsetParent && e.scrollWidth > e.clientWidth).map((e) => `${e.className.split(" ")[0]} +${e.scrollWidth - e.clientWidth}px`),
+        );
+        assert(over.length === 0, `${id} at ${width}px: ${over.join(", ")}`);
+      }
+      await p.close();
+    }
   });
 
   await check("docs blocks show their output and load no engine until Run", async () => {
