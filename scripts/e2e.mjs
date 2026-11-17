@@ -112,6 +112,7 @@ try {
     await open(base);
     const text = await page.textContent("#engine-version");
     assert(text === `eucalypt ${engine.version} (${engine.commit.slice(0, 7)})`, `version shown as ${text}`);
+    assert(/runs in your browser/.test(await page.textContent("#engine-note")), "no note that the engine runs in the browser");
     const href = await page.getAttribute("#engine-version", "href");
     assert(href.endsWith(engine.commit), `version links to ${href}`);
   });
