@@ -274,8 +274,6 @@
   margin: 0;
   padding: 12px 16px;
   font: 13px/1.62 var(--gg-mono);
-  white-space: pre;
-  overflow-x: auto;
   color: var(--gg-ink);
 }
 .ed-live.err {

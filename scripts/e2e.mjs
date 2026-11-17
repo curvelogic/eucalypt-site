@@ -259,6 +259,20 @@ try {
           els.filter((e) => e.offsetParent && e.scrollWidth > e.clientWidth).map((e) => `${e.className.split(" ")[0]} +${e.scrollWidth - e.clientWidth}px`),
         );
         assert(over.length === 0, `${id} at ${width}px: ${over.join(", ")}`);
+        // And once edited, its live output in each format.
+        await p.click(`#ex-${id} [data-src]`);
+        await p.waitForSelector(`#ex-${id} .cm-editor`);
+        await p.click(`#ex-${id} .cm-content`);
+        await p.keyboard.press("ControlOrMeta+End");
+        await p.keyboard.type(" ");
+        await p.waitForSelector(`#ex-${id} [data-live]:not([hidden])`);
+        for (const fmt of ["yaml", "json", "toml"]) {
+          const button = p.locator(`#ex-${id} [data-fmt=${fmt}]`);
+          if (await button.isEnabled()) await button.click();
+          await p.waitForTimeout(100);
+          const live = await p.$eval(`#ex-${id} [data-live]`, (e) => e.scrollWidth - e.clientWidth);
+          assert(live <= 0, `${id} live ${fmt} output at ${width}px: +${live}px`);
+        }
       }
       await p.close();
     }
