@@ -9,7 +9,7 @@
  */
 import "../vendor/highlight.css";
 import { EditorView } from "@codemirror/view";
-import { StateEffect } from "@codemirror/state";
+import { Compartment, EditorState, StateEffect } from "@codemirror/state";
 import { createEditor } from "./editor";
 import { initEvaluator, run as runUnit, runExpr, type EvalResult } from "./evaluator";
 import { loadHighlighter } from "./highlight/browser";
@@ -36,6 +36,11 @@ export interface LiveEditor {
   run(): void;
   /** Change the output format and evaluate. */
   setFormat(format: string): void;
+  /**
+   * Live mode, on from the start. Off, the source is read-only and nothing
+   * is evaluated, so the last output stays; on again, it evaluates at once.
+   */
+  setLive(on: boolean): void;
   destroy(): void;
 }
 
@@ -57,9 +62,13 @@ export async function mountLiveEditor(container: HTMLElement, options: LiveOptio
   let format = options.format;
   const mode = options.mode ?? "unit";
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let on = true;
+  const editable = new Compartment();
+  const lock = (live: boolean) => [EditorView.editable.of(live), EditorState.readOnly.of(!live)];
 
   const evaluate = () => {
     clearTimeout(timer);
+    if (!on) return;
     const source = view.state.doc.toString();
     let result: EvalResult;
     try {
@@ -75,11 +84,12 @@ export async function mountLiveEditor(container: HTMLElement, options: LiveOptio
   view.dispatch({
     effects: StateEffect.appendConfig.of([
       EditorView.updateListener.of((u) => {
-        if (!u.docChanged) return;
+        if (!u.docChanged || !on) return;
         clearTimeout(timer);
         timer = setTimeout(evaluate, options.delay ?? 300);
       }),
       options.wrap ? EditorView.lineWrapping : [],
+      editable.of(lock(true)),
     ]),
   });
 
@@ -90,6 +100,13 @@ export async function mountLiveEditor(container: HTMLElement, options: LiveOptio
     setFormat(f) {
       format = f;
       evaluate();
+    },
+    setLive(live) {
+      if (live === on) return;
+      on = live;
+      view.dispatch({ effects: editable.reconfigure(lock(live)) });
+      if (live) evaluate();
+      else clearTimeout(timer);
     },
     destroy() {
       clearTimeout(timer);

@@ -65,9 +65,14 @@ function render(p: HTMLElement, fmt: string): void {
 /** The last source and result of each example that has gone live. */
 const current = new Map<string, { source: string; result: EvalResult | null }>();
 
-function setState(p: HTMLElement, text: string): void {
+/** The foot's status: loading, or the "Live" mark (as on "Run live" when on). */
+function setState(p: HTMLElement, text: string, live = false): void {
   const s = p.querySelector<HTMLElement>("[data-state]");
-  if (s) s.textContent = text;
+  if (!s) return;
+  s.textContent = text;
+  s.classList.toggle("gg-live-mark", live);
+  if (live) s.title = "Edits re-run as you type";
+  else s.removeAttribute("title");
 }
 
 /** Mount the live editor over one example's source; once per example. */
@@ -91,7 +96,7 @@ function goLive(p: HTMLElement, focus: boolean): Promise<LiveEditor> {
         },
       });
       p.querySelector<HTMLElement>("[data-src]")!.removeAttribute("tabindex");
-      setState(p, "");
+      setState(p, "Live", true);
       return editor;
     })();
     entry.catch(() => {

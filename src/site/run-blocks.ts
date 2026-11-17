@@ -1,15 +1,16 @@
 /**
  * Runnable blocks in the browser. Each `[data-run]` block arrives with its
  * output already rendered (src/site/runnable.ts for the docs, the tour on
- * the homepage); this script only shows the Run buttons. Pressing one loads
- * the playground's editor and engine (src/live.ts) for the first time on
- * the page, turns the block's source into an editor and its output into the
- * live result, which follows each edit. "Open in the playground" follows
+ * the homepage); this script only shows the "Run live" toggles. Turning one
+ * on loads the playground's editor and engine (src/live.ts) for the first
+ * time on the page, turns the block's source into an editor and its output
+ * into the live result, which follows each edit. Turning it off stops
+ * evaluating and leaves the last output. "Open in the playground" follows
  * the edits too.
  *
  * Block markup: `[data-run]` with `data-source` and `data-format`, holding
  * `[data-run-src]` (the source), `[data-run-out]` (the output), a
- * `[data-run-btn]` button and a `[data-run-link]` link.
+ * `[data-run-btn]` toggle (`aria-pressed`) and a `[data-run-link]` link.
  */
 import type { EvalResult, LiveEditor } from "../live";
 
@@ -50,32 +51,45 @@ async function mount(block: HTMLElement): Promise<LiveEditor> {
   return editor;
 }
 
-async function onRun(block: HTMLElement, button: HTMLButtonElement): Promise<void> {
+/** The button's visible label, which is also its accessible name. */
+function label(button: HTMLButtonElement, text: string): void {
+  button.querySelector<HTMLElement>(".lbl")!.textContent = text;
+}
+
+/**
+ * "Run live" is a toggle. The first press loads the editor and engine and
+ * turns the block live; a second turns live mode off, leaving the source
+ * read-only and the last output showing; a third turns it on again.
+ */
+async function onToggle(block: HTMLElement, button: HTMLButtonElement): Promise<void> {
+  if (button.getAttribute("aria-busy") === "true") return;
   let editor = live.get(block);
-  if (!editor) {
-    button.disabled = true;
-    button.textContent = "Loading…";
-    editor = mount(block);
-    live.set(block, editor);
-    try {
-      const ed = await editor;
-      ed.run();
-      ed.view.focus();
-    } catch (e) {
-      live.delete(block);
-      button.textContent = "Could not load the engine";
-      console.error(e);
-      return;
-    } finally {
-      button.disabled = false;
-    }
-    button.textContent = "▶ Run";
+  if (editor) {
+    const on = button.getAttribute("aria-pressed") !== "true";
+    button.setAttribute("aria-pressed", String(on));
+    block.classList.toggle("live", on);
+    (await editor).setLive(on);
     return;
   }
-  (await editor).run();
+  button.setAttribute("aria-busy", "true");
+  label(button, "Loading…");
+  editor = mount(block);
+  live.set(block, editor);
+  try {
+    const ed = await editor;
+    button.setAttribute("aria-pressed", "true");
+    ed.run();
+    label(button, "Run live");
+  } catch (e) {
+    live.delete(block);
+    label(button, "Could not load the engine");
+    console.error(e);
+  } finally {
+    button.removeAttribute("aria-busy");
+  }
 }
 
 for (const button of document.querySelectorAll<HTMLButtonElement>("[data-run] [data-run-btn]")) {
   button.hidden = false;
-  button.addEventListener("click", () => void onRun(button.closest<HTMLElement>("[data-run]")!, button));
+  button.addEventListener("click", () => void onToggle(button.closest<HTMLElement>("[data-run]")!, button));
 }

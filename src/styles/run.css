@@ -39,21 +39,95 @@
 .gg-run-h a:hover {
   text-decoration: underline;
 }
+/*
+ * "Run live": a toggle (aria-pressed), drawn as a small switch. Off, it
+ * invites a press in leaf green; on, the track fills with leaf and the
+ * button takes the leaf wash, the same leaf as the hero's "Live" mark.
+ */
 .gg-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font: 600 12.5px var(--gg-body);
-  border: 0;
-  border-radius: 6px;
-  padding: 5px 10px;
-  background: var(--gg-leaf);
-  color: var(--gg-leaf-ink);
+  border: 1px solid color-mix(in srgb, var(--gg-leaf) 55%, var(--gg-code-line));
+  border-radius: 999px;
+  padding: 4px 11px 4px 6px;
+  background: var(--gg-code-bg);
+  color: var(--gg-link);
   cursor: pointer;
 }
-.gg-run-btn:disabled {
-  opacity: 0.7;
+.gg-run-btn:hover {
+  border-color: var(--gg-leaf);
+}
+.gg-run-btn:focus-visible {
+  outline: 2px solid var(--gg-leaf);
+  outline-offset: 2px;
+}
+.gg-run-btn .sw {
+  position: relative;
+  flex: none;
+  width: 24px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--gg-code-line);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gg-muted) 45%, transparent);
+  transition: background-color 0.15s;
+}
+.gg-run-btn .sw::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gg-muted);
+  transition: transform 0.15s;
+}
+.gg-run-btn[aria-pressed="true"] {
+  background: var(--gg-leaf-wash);
+  border-color: var(--gg-leaf);
+  color: var(--gg-ink);
+}
+.gg-run-btn[aria-pressed="true"] .sw {
+  background: var(--gg-leaf);
+  box-shadow: none;
+}
+.gg-run-btn[aria-pressed="true"] .sw::after {
+  background: var(--gg-leaf-ink);
+  transform: translateX(10px);
+}
+.gg-run-btn[aria-busy="true"] {
   cursor: progress;
+}
+.gg-run-btn[aria-busy="true"] .sw::after {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gg-run-btn .sw,
+  .gg-run-btn .sw::after {
+    transition: none;
+  }
 }
 .gg-run-btn[hidden] {
   display: none;
+}
+
+/* The "Live" mark: the hero's status when its editor is live. */
+.gg-live-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gg-ink);
+  font-weight: 600;
+}
+.gg-live-mark::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gg-leaf);
+  box-shadow: 0 0 0 3px var(--gg-leaf-wash);
 }
 
 .gg-run-out {
