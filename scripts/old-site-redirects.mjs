@@ -3,7 +3,6 @@
 // cannot send HTTP redirects.
 //
 //   node scripts/old-site-redirects.mjs docs OUT [OLD_PATHS]
-//   node scripts/old-site-redirects.mjs play OUT
 //
 // docs: the old mdBook docs at https://curvelogic.github.io/eucalypt/. One
 // page per old path, from src/generated/redirects.json (written by
@@ -13,10 +12,6 @@
 // in it with no new equivalent forwards to /docs/. A 404.html forwards any
 // other path the same way, by script. The old site's llms.txt files become
 // notes giving their new place.
-//
-// play: the old playground at https://curvelogic.github.io/eucalypt-playground/.
-// An index.html and a 404.html that forward to /play/ with the URL fragment,
-// so #z=, #gh= and the older base64 share links open the same program.
 //
 // Every page has a meta refresh, a canonical link and a visible link; a
 // script forwards first so that the fragment is kept.
@@ -122,12 +117,6 @@ export function docsFiles(redirects, oldPaths = []) {
   return files;
 }
 
-/** The files to write for the old playground: path → content. */
-export function playFiles() {
-  const page = redirectPage(`${SITE}/play/`, "The eucalypt playground has moved");
-  return { ".nojekyll": "", "index.html": page, "404.html": page };
-}
-
 function write(out, files) {
   for (const [path, content] of Object.entries(files)) {
     mkdirSync(dirname(join(out, path)), { recursive: true });
@@ -138,16 +127,12 @@ function write(out, files) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [kind, out, oldList] = process.argv.slice(2);
-  if (!out || (kind !== "docs" && kind !== "play")) {
-    console.error("usage: old-site-redirects.mjs docs OUT [OLD_PATHS] | play OUT");
+  if (!out || kind !== "docs") {
+    console.error("usage: old-site-redirects.mjs docs OUT [OLD_PATHS]");
     process.exit(2);
   }
-  if (kind === "play") {
-    write(out, playFiles());
-  } else {
-    const root = new URL("..", import.meta.url).pathname;
-    const redirects = JSON.parse(readFileSync(join(root, "src/generated/redirects.json"), "utf8"));
-    const oldPaths = oldList ? readFileSync(oldList, "utf8").split("\n").map((l) => l.trim()).filter(Boolean) : [];
-    write(out, docsFiles(redirects, oldPaths));
-  }
+  const root = new URL("..", import.meta.url).pathname;
+  const redirects = JSON.parse(readFileSync(join(root, "src/generated/redirects.json"), "utf8"));
+  const oldPaths = oldList ? readFileSync(oldList, "utf8").split("\n").map((l) => l.trim()).filter(Boolean) : [];
+  write(out, docsFiles(redirects, oldPaths));
 }
