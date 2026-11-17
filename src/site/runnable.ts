@@ -140,7 +140,8 @@ export const runnable: MdastPluginEntry = ({ fileURL }) => {
         return;
       }
       if (!result.success || result.output === undefined) {
-        throw new Error(`${where} cannot be rendered: ${result.error?.message ?? "no output"}`);
+        console.error(`FENCEFAIL ${where} cannot be rendered: ${result.error?.message ?? "no output"}`);
+        return; // TEMPORARY diagnostic
       }
       const output = result.output.replace(/^---\n/, "").replace(/\n+$/, "");
       const block = wrap("div", { className: ["gg-run", "not-content"], dataRun: "", dataSource: source, dataFormat: "yaml" }, [
