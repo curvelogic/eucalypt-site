@@ -12,6 +12,12 @@ bd close <id>         # Complete work
 bd dolt push          # Push beads data to remote
 ```
 
+## Review and merging
+
+[REVIEW.md](REVIEW.md) sets the review criteria and who may merge what.
+Read it before merging anything: some PRs (deployment, `.github/`, `REVIEW.md`,
+`AGENTS.md`, `.claude/`, anything held) are the owner's to merge.
+
 ## Non-Interactive Shell Commands
 
 **ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
