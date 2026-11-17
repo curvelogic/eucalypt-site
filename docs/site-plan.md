@@ -52,6 +52,11 @@ shared with `scripts/vendor-eucalypt.sh`).
   `docs/development/` and the like cannot reach the site.
   `scripts/check-site.mjs` checks the built output both ways: every listed
   page is there, and nothing else is under `/docs/`.
+- Internal material is never linked either: a link into `docs/superpowers/`
+  becomes its text, `check-site.mjs` fails on any link to it, and the import
+  warns about a published page that still mentions it. (eucalypt#1262
+  rewords the pages that do; once the pin passes it, the warning can become
+  an error.)
 - Each page's leading `# Title` becomes front matter, with an edit link to
   the file in eucalypt. Links between pages become site URLs; links to
   anything unpublished go to the file on GitHub at the pinned commit.

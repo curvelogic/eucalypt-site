@@ -13,7 +13,10 @@
 //   - moves the leading "# Title" into Starlight front matter, with an edit
 //     link to the page in eucalypt;
 //   - rewrites links between pages to site URLs, and links to anything
-//     unpublished to the file on GitHub at the pinned commit;
+//     unpublished to the file on GitHub at the pinned commit, except
+//     internal material (INTERNAL below), which is never linked: such a
+//     link becomes its text, and a page that still mentions internal
+//     material is reported as a warning;
 //   - turns mdBook fence flags into meta ("```eu,notest" becomes
 //     "```eu notest"), so code blocks keep their flags for runnable blocks.
 //
@@ -106,6 +109,19 @@ function rewriteTarget(target, from) {
   return repoBlob(repoPath) + hash;
 }
 
+/** Internal material under docs/: never published, never linked. */
+const INTERNAL = /^superpowers\//;
+const isInternal = (target, from) =>
+  !/^([a-z][a-z0-9+.-]*:|#|\/\/)/i.test(target) &&
+  INTERNAL.test(posix.normalize(posix.join(posix.dirname(from), decodeURI(target.split("#")[0]))));
+
+/** Replace links into internal material by their text. */
+function unlinkInternal(text, from) {
+  return text.replace(/\[((?:`[^`]*`|[^\]`])*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (link, label, target) =>
+    isInternal(target, from) ? label : link,
+  );
+}
+
 function rewriteLinks(text, from) {
   // Inline links and reference definitions; not inside inline code spans.
   return text
@@ -140,7 +156,7 @@ function convert(markdown, from) {
       const meta = [...flags, open[4].trim()].filter(Boolean).join(" ");
       return `${open[1]}${open[2]}${name}${meta ? " " + meta : ""}`;
     }
-    return rewriteLinks(line, from);
+    return rewriteLinks(unlinkInternal(line, from), from);
   });
   return { title, body: out.join("\n").replace(/^\n+/, "") };
 }
@@ -149,6 +165,8 @@ const contentDir = join(root, "src/content/docs/docs");
 rmSync(contentDir, { recursive: true, force: true });
 for (const { page, path, isRoot } of pages) {
   const { title, body } = convert(readFileSync(join(docs, page), "utf8"), page);
+  const mentions = body.match(/docs\/superpowers\/|\]\((?:\.\.\/)*superpowers\//g);
+  if (mentions) warnings.push(`${page}: mentions internal material (docs/superpowers/) ${mentions.length} time(s)`);
   const front = [
     "---",
     `title: ${JSON.stringify(title)}`,

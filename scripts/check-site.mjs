@@ -3,6 +3,7 @@
 //   - every page eucalypt's docs/SUMMARY.md lists is there, under /docs/;
 //   - nothing else is under /docs/: no internal material (docs/superpowers/,
 //     docs/development/ and the like) and no page SUMMARY.md does not list;
+//   - no page links to internal material (docs/superpowers/), even on GitHub;
 //   - the homepage and /play are there.
 //
 //   npm run build   (runs this last)
@@ -32,6 +33,11 @@ for (const file of walk(join(dist, "docs"))) {
 for (const file of walk(dist)) {
   const rel = relative(dist, file);
   if (/(^|\/)(superpowers|development)(\/|$)/.test(rel)) failures.push(`internal material in the build: ${rel}`);
+}
+for (const file of walk(dist).filter((f) => f.endsWith(".html"))) {
+  if (/href="[^"]*\/docs\/superpowers\//.test(readFileSync(file, "utf8"))) {
+    failures.push(`link to internal material in ${relative(dist, file)}`);
+  }
 }
 for (const page of ["index.html", "play/index.html"]) {
   if (!existsSync(join(dist, page))) failures.push(`missing ${page}`);
