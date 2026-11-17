@@ -3,6 +3,8 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { satteri } from "@astrojs/markdown-satteri";
+import { runnable } from "./src/site/runnable.ts";
 
 // Written by scripts/import-docs.mjs from the pinned eucalypt revision.
 const generated = (name) => {
@@ -36,16 +38,19 @@ const startLight = {
 export default defineConfig({
   site: "https://eucalypt.curvelogic.info",
   trailingSlash: "always",
+  // Runnable eu blocks in the docs, with output rendered by the engine.
+  markdown: { processor: satteri({ mdastPlugins: [runnable] }) },
   integrations: [
     starlight({
       title: "eucalypt",
       description: "A little language for YAML, JSON and TOML.",
       favicon: "/favicon.svg",
       sidebar: generated("sidebar.json"),
-      customCss: ["./src/styles/ghost-gum.css", "./src/styles/starlight.css"],
+      customCss: ["./src/styles/ghost-gum.css", "./src/styles/starlight.css", "./src/styles/run.css"],
       components: {
         Header: "./src/components/starlight/Header.astro",
         SkipLink: "./src/components/starlight/SkipLink.astro",
+        MarkdownContent: "./src/components/starlight/MarkdownContent.astro",
         ThemeProvider: "./src/components/starlight/ThemeProvider.astro",
         ThemeSelect: "./src/components/ThemeSelect.astro",
       },

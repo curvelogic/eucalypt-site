@@ -6,6 +6,7 @@ import Mark from "../components/Mark.astro";
 import { CLI, HERO, LAZY, TOUR } from "../site/examples";
 import { diagnostic, output, playLink } from "../site/engine";
 import "../styles/home.css";
+import "../styles/run.css";
 
 const tour = await Promise.all(
   TOUR.map(async (t) => ({
@@ -150,19 +151,39 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
         <div class="tour">
           {
             tour.map((t) => (
-              <div class="tcard">
+              <div class="tcard" data-run={t.output ? "" : undefined} data-source={t.source} data-format="yaml">
                 <h3>
                   {t.title}
                   <small>{t.key}</small>
                 </h3>
-                <div class="duo">
-                  <Snippet code={t.source} plain />
-                  {t.output && <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />}
-                  {t.error && <pre class="tcard-err">{t.error}</pre>}
-                </div>
-                <a class="more" href={t.link}>
-                  Open in the playground →
-                </a>
+                {t.output ? (
+                  <>
+                    <div class="duo">
+                      <div class="gg-run-src" data-run-src>
+                        <Snippet code={t.source} plain />
+                      </div>
+                      <div class="gg-run-out" data-run-out>
+                        <Snippet code={t.output.replace(/^---\n/, "")} lang="yaml" output plain />
+                      </div>
+                    </div>
+                    <div class="tfoot">
+                      <a class="more" href={t.link} data-run-link>
+                        Open in the playground →
+                      </a>
+                      <button type="button" class="gg-run-btn" data-run-btn hidden>▶ Run</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div class="duo">
+                      <Snippet code={t.source} plain />
+                      <pre class="tcard-err">{t.error}</pre>
+                    </div>
+                    <a class="more" href={t.link}>
+                      Open in the playground →
+                    </a>
+                  </>
+                )}
               </div>
             ))
           }
@@ -252,3 +273,8 @@ const installScript = "curl -sSf https://raw.githubusercontent.com/curvelogic/eu
     </div>
   </footer>
 </Site>
+
+<script>
+  // The tour's Run buttons; the editor and engine load on the first press.
+  import "../site/run-blocks";
+</script>

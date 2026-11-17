@@ -1,0 +1,107 @@
+/*
+ * Runnable blocks (src/site/runnable.ts, src/site/run-blocks.ts): the
+ * source, a header with Run and "Open in the playground", and the output
+ * the engine rendered at build time, in one card. Used by the docs and the
+ * homepage tour.
+ */
+
+.gg-run {
+  --eu-bg: var(--gg-code-bg);
+  --eu-fg: var(--gg-ink);
+  border: 1px solid var(--gg-code-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--gg-code-bg);
+  color: var(--gg-ink);
+}
+.sl-markdown-content .gg-run {
+  margin-top: 1rem;
+}
+
+.gg-run-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 14px;
+  border-bottom: 1px solid var(--gg-code-line);
+  background: var(--gg-code-bar);
+  font: 12px var(--gg-mono);
+  color: var(--gg-muted);
+}
+.gg-run-h .sp {
+  flex: 1;
+}
+.gg-run-h a {
+  color: var(--gg-link);
+  font: 600 13px var(--gg-body);
+  text-decoration: none;
+}
+.gg-run-h a:hover {
+  text-decoration: underline;
+}
+.gg-run-btn {
+  font: 600 12.5px var(--gg-body);
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  background: var(--gg-leaf);
+  color: var(--gg-leaf-ink);
+  cursor: pointer;
+}
+.gg-run-btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+.gg-run-btn[hidden] {
+  display: none;
+}
+
+.gg-run-out {
+  border-top: 1px dashed var(--gg-code-line);
+  background: var(--gg-out-bg);
+}
+.gg-run-oh {
+  display: block;
+  padding: 8px 14px 0;
+  font: 12px var(--gg-mono);
+  color: var(--gg-muted);
+}
+.gg-run-out.failed .gg-run-oh {
+  color: var(--gg-err);
+}
+
+/* Expressive Code's frame, flattened into the card. */
+.gg-run .expressive-code .frame {
+  box-shadow: none;
+}
+.gg-run .expressive-code pre {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.gg-run .expressive-code .frame.has-title:not(.is-terminal) .title,
+.gg-run .expressive-code .header {
+  display: none;
+}
+
+/* The live editor and its output. */
+.gg-run-src .cm-editor {
+  max-height: 32rem;
+}
+.gg-run-src .cm-editor.cm-focused {
+  outline: 2px solid color-mix(in srgb, var(--gg-leaf) 45%, transparent);
+  outline-offset: -2px;
+}
+.gg-run-live {
+  margin: 0;
+  padding: 8px 14px 12px;
+  font: 13px/1.6 var(--gg-mono);
+  white-space: pre;
+  overflow-x: auto;
+  background: transparent;
+  color: var(--gg-ink);
+}
+.gg-run-live.err {
+  color: var(--gg-err);
+  white-space: pre-wrap;
+}
