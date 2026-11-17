@@ -48,12 +48,14 @@ describe("playground examples", () => {
       if (mode === "expr") continue;
       const lines = source.split("\n");
       for (let n = 1; n < lines.length; n++) {
-        // A top-level line that starts a definition, after a line that is
-        // neither blank nor its own doc string or comment.
-        const starts = /^[^\s#`]/.test(lines[n]);
+        // A line at the left margin opens a definition, or the doc string
+        // or comment above one; closing brackets end the one before.
+        const opens = /^[^\s}\]]/.test(lines[n]);
+        // It must follow a blank line, or the doc string or comment it
+        // belongs to.
         const prev = lines[n - 1];
-        const attached = prev === "" || prev.startsWith("`") || prev.startsWith("#") || /^\s/.test(prev);
-        expect(starts && !attached && !/^[}\]]/.test(lines[n]), `${name}, line ${n + 1}`).toBe(false);
+        const ok = prev === "" || prev.startsWith("`") || prev.startsWith("#");
+        expect(opens && !ok, `${name}, line ${n + 1}`).toBe(false);
       }
     }
   });

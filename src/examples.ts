@@ -165,19 +165,21 @@ bumped: config over(‹:server :db :port›, + 1)
 moved: config over(‹:server :db :host›, -> "db.prod")
 
 # The playground cannot import lens.eu yet, so here are the
-# parts of it this example uses, as lens.eu defines them.
+# parts of it this example uses, simplified from lens.eu.
 
 \` "\`at(key)\` - a lens on the value at \`key\` in a block."
 at(key, k): {
   fmap: meta(k).fmap
-  s(obj): fmap({ nv: • }.(obj alter-value(key, nv)), k(obj lookup(key)))
+  s(obj): fmap({ nv: • }.(obj alter-value(key, nv)),
+               k(obj lookup(key)))
 }.(s // meta(k))
 
 \` "\`view(lens, data)\` - the value \`lens\` focuses on."
 view(lens, data): data lens(identity // { fmap: flip(const) })
 
 \` "\`over(lens, fn, data)\` - \`data\` with \`fn\` applied at the focus."
-over(lens, fn, data): data lens(fn // { fmap: identity, pure: identity, ap: identity })
+over(lens, fn, data):
+  data lens(fn // { fmap: identity, pure: identity, ap: identity })
 
 \` "A path of keys as one lens: ‹:a :b› is at(:a) ∘ at(:b)."
 ‹xs›: xs map(at) foldr(∘, identity)`,
